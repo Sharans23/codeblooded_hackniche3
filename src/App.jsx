@@ -10,7 +10,6 @@ import ScanPage from "./pages/scan";
 import Settings from "./pages/settings";
 import CreateOrder from "./pages/createorder";
 import ClientDashboard from "./pages/client-dashboard";
-import OrderForm from "./components/whatsapp";
 import SalesPrediction from "./lib/machineLearning";
 import Loginpage from "./components/loginpage";
 import InventoryAnalyzer from "./pages/inventory-analyzer";
@@ -43,7 +42,6 @@ function App() {
         <Route path="settings" element={<Settings />} />
         <Route path="createorder" element={<CreateOrder />} />
         <Route path="client-dashboard" element={<ClientDashboard />} />
-        <Route path="order-form" element={<OrderForm />} />
         <Route path="machineLearning" element={<SalesPrediction />} />
         <Route path="login" element={<Login />} />
         <Route path="loginpage" element={<Loginpage />} />
