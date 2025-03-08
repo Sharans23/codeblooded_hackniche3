@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -43,6 +43,64 @@ import { motion } from "framer-motion";
 export default function Dashboard() {
   const { user } = useAuth();
   const warehouseLocation = user?.location || "north";
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  function getCookie(name) {
+    console.log(document.cookie)
+
+    const cookies = document.cookie.split('; ');
+    for (let cookie of cookies) {
+        let [key, value] = cookie.split('=');
+        if (key === name) {
+            return decodeURIComponent(value);
+        }
+    }
+    return null;
+}
+useEffect(() => {
+  const fetchUser = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/api/users/profile", {
+        method: "GET",
+        credentials: "include", // Required for cookies/session to be sent
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await res.json();
+      console.log(data);
+    } catch (error) {
+      console.error("Failed to fetch user", error);
+    }
+  };
+  fetchUser();
+}, []);
+// useEffect(() => {
+//   fetch("https://b54pb2nm-5000.inc1.devtunnels.ms/api/users/profile",
+//     {
+//       credentials:"include"
+//     }
+//   )
+//     .then((response) => {
+//       if (!response.ok) {
+//         throw new Error("Network response was not ok");
+//       }
+//       return response.json();
+//     })
+//     .then((data) => {
+//       setData(data);
+//       setLoading(false);
+//     })
+//     .catch((error) => {
+//       setError(error.message);
+//       setLoading(false);
+//     });
+// }, []); 
+
+
+  
 
   const [lowStockAlerts, setLowStockAlerts] = useState([
     {
@@ -409,17 +467,19 @@ export default function Dashboard() {
 
         <TabsContent value="inventory-methods">
           <div className="grid gap-4 md:grid-cols-2">
+            {/* FIFO vs LIFO Distribution Card */}
             <Card>
               <CardHeader>
                 <CardTitle>Inventory Method Distribution</CardTitle>
                 <CardDescription>
-                  Products using FIFO vs LIFO inventory methods
+                  Track how FIFO and LIFO methods are used across your products.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center justify-center h-[300px]">
                   <div className="flex flex-col items-center">
                     <div className="relative h-64 w-64">
+                      {/* Animated Donut Chart */}
                       <div className="absolute inset-0 flex items-center justify-center">
                         <svg viewBox="0 0 100 100" className="h-full w-full">
                           <circle
@@ -444,9 +504,11 @@ export default function Dashboard() {
                               251.2
                             } 251.2`}
                             transform="rotate(-90 50 50)"
+                            className="animate-progress"
                           />
                         </svg>
                       </div>
+                      {/* Center Percentage */}
                       <div className="absolute inset-0 flex flex-col items-center justify-center">
                         <span className="text-3xl font-bold">
                           {Math.round(
@@ -461,6 +523,7 @@ export default function Dashboard() {
                         </span>
                       </div>
                     </div>
+                    {/* Legend and Counts */}
                     <div className="mt-4 grid grid-cols-2 gap-4 text-center">
                       <div>
                         <div className="flex items-center justify-center">
@@ -489,14 +552,24 @@ export default function Dashboard() {
                     </div>
                   </div>
                 </div>
+                {/* Explanation Section */}
+                <div className="mt-6 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    FIFO (First-In, First-Out) ensures older inventory is sold
+                    first, reducing the risk of obsolescence. LIFO (Last-In,
+                    First-Out) can help manage costs during inflation. Choose
+                    wisely based on your business needs.
+                  </p>
+                </div>
               </CardContent>
             </Card>
 
+            {/* Batch Management Card */}
             <Card>
               <CardHeader>
                 <CardTitle>Batch Management</CardTitle>
                 <CardDescription>
-                  Products with multiple batches
+                  Manage products with multiple batches efficiently.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -504,7 +577,7 @@ export default function Dashboard() {
                   {batchProducts.map((product) => (
                     <div
                       key={product.id}
-                      className="flex items-center justify-between rounded-lg border p-3"
+                      className="flex items-center justify-between rounded-lg border p-3 hover:bg-accent/50 transition-colors"
                     >
                       <div className="flex items-center space-x-4">
                         <div className="rounded-md bg-primary/10 p-2">

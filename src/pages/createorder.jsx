@@ -63,10 +63,12 @@ import { useAuth } from "../lib/auth-context";
 export default function CreateOrder() {
   const { user } = useAuth();
   const warehouseLocation = user?.location || "north";
+  const warehouseId = "67cc52504bf2e035730c0d48"; // You might want to make this dynamic based on the user
 
   // State for inventory items
   const [inventoryItems, setInventoryItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   
   // State for order items
   const [orderItems, setOrderItems] = useState([]);
@@ -81,32 +83,58 @@ export default function CreateOrder() {
   const [showProductDetails, setShowProductDetails] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
-  // Initialize inventory items
+  // Fetch inventory items from API
   useEffect(() => {
-    // In a real app, this would be an API call
-    // For now, we'll use the sample data
-    const items = sampleInventoryItems.map(item => ({
-      ...item,
-      lowStockThreshold: item.lowStockThreshold || 5,
-    }));
-    
-    setInventoryItems(items);
-    
-    // Extract unique categories
-    const categories = [...new Set(items.map(item => item.category))];
-    setAvailableCategories(categories);
-    
-    setLoading(false);
-  }, []);
+    const fetchInventoryItems = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`http://localhost:5000/api/warehouseProducts/67cc52504bf2e035730c0d48`);
+        
+        if (!response.ok) {
+          throw new Error(`API request failed with status ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // Transform the API data into the format expected by the component
+        const transformedItems = data.map(item => ({
+          id: item.productId,
+          name: item.product.name,
+          code: item.product.code,
+          category: item.product.category,
+          type: item.product.type,
+          brand: item.product.brand,
+          price: item.product.price,
+          unit: item.product.unit,
+          quantity: parseInt(item.quantity, 10),
+          warehouse: warehouseLocation,
+          lowStockThreshold: 5 // You might want to make this dynamic or get it from the product data
+        }));
+        
+        setInventoryItems(transformedItems);
+        
+        // Extract unique categories
+        const categories = [...new Set(transformedItems.map(item => item.category))];
+        setAvailableCategories(categories);
+        
+        setLoading(false);
+      } catch (err) {
+        console.error("Failed to fetch inventory items:", err);
+        setError("Failed to load products. Please try again later.");
+        setLoading(false);
+      }
+    };
+
+    fetchInventoryItems();
+  }, [warehouseId, warehouseLocation]);
 
   // Filter items by warehouse location, category, and search term
   const filteredItems = inventoryItems
-    .filter(item => item.warehouse.toLowerCase() === warehouseLocation.toLowerCase())
     .filter(item => selectedCategory === "all" || item.category === selectedCategory)
     .filter(
       item =>
         item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.sku.toLowerCase().includes(searchTerm.toLowerCase())
+        item.code.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
   // Functions for managing order items
@@ -134,7 +162,7 @@ export default function CreateOrder() {
         {
           id: item.id,
           name: item.name,
-          sku: item.sku,
+          code: item.code,
           category: item.category,
           price: item.price,
           quantity: quantity,
@@ -228,7 +256,7 @@ export default function CreateOrder() {
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
-                placeholder="Search by name or SKU..."
+                placeholder="Search by name or code..."
                 className="w-full pl-8"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -271,6 +299,10 @@ export default function CreateOrder() {
             <div className="h-64 flex items-center justify-center">
               <p>Loading products...</p>
             </div>
+          ) : error ? (
+            <div className="h-64 flex items-center justify-center text-destructive">
+              <p>{error}</p>
+            </div>
           ) : filteredItems.length === 0 ? (
             <div className="h-64 flex flex-col items-center justify-center text-muted-foreground">
               <p>No products found.</p>
@@ -281,7 +313,7 @@ export default function CreateOrder() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Product</TableHead>
-                  <TableHead>SKU</TableHead>
+                  <TableHead>Code</TableHead>
                   <TableHead>Category</TableHead>
                   <TableHead className="text-center">Price</TableHead>
                   <TableHead className="text-center">Available</TableHead>
@@ -306,7 +338,7 @@ export default function CreateOrder() {
                       >
                         {item.name}
                       </TableCell>
-                      <TableCell>{item.sku}</TableCell>
+                      <TableCell>{item.code}</TableCell>
                       <TableCell>
                         <Badge variant="outline">{item.category}</Badge>
                       </TableCell>
@@ -315,13 +347,13 @@ export default function CreateOrder() {
                       </TableCell>
                       <TableCell className="text-center">
                         <span
-                          className={`${
+                          className={
                             item.quantity <= item.lowStockThreshold
                               ? "text-destructive"
                               : item.quantity <= item.lowStockThreshold * 2
                               ? "text-amber-500"
                               : "text-green-500"
-                          }`}
+                          }
                         >
                           {item.quantity}
                         </span>
@@ -397,8 +429,8 @@ export default function CreateOrder() {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-muted-foreground">SKU</p>
-                    <p className="font-medium">{selectedProduct.sku}</p>
+                    <p className="text-sm text-muted-foreground">Code</p>
+                    <p className="font-medium">{selectedProduct.code}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Category</p>
@@ -417,8 +449,18 @@ export default function CreateOrder() {
                     <p className="font-medium">{selectedProduct.warehouse}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Aisle</p>
-                    <p className="font-medium">{selectedProduct.aisle}</p>
+                    <p className="text-sm text-muted-foreground">Unit</p>
+                    <p className="font-medium">{selectedProduct.unit}</p>
+                  </div>
+                  {selectedProduct.brand && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Brand</p>
+                      <p className="font-medium">{selectedProduct.brand}</p>
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-sm text-muted-foreground">Type</p>
+                    <p className="font-medium">{selectedProduct.type}</p>
                   </div>
                 </div>
 
@@ -427,8 +469,8 @@ export default function CreateOrder() {
                     <Info className="h-4 w-4 mr-2 text-muted-foreground" />
                     <p className="text-sm text-muted-foreground">
                       {selectedProduct.quantity <= selectedProduct.lowStockThreshold 
-                        ? "This item is low in stock." 
-                        : "This item is available for order."}
+                        ? "This product is low in stock." 
+                        : "This product is available for order."}
                     </p>
                   </div>
                 </div>
@@ -490,7 +532,7 @@ export default function CreateOrder() {
                       <TableRow key={item.id}>
                         <TableCell className="font-medium">
                           {item.name}
-                          <div className="text-xs text-muted-foreground">{item.sku}</div>
+                          <div className="text-xs text-muted-foreground">{item.code}</div>
                         </TableCell>
                         <TableCell>{item.category}</TableCell>
                         <TableCell className="text-center">
@@ -565,147 +607,3 @@ export default function CreateOrder() {
     </div>
   );
 }
-
-// Sample inventory data
-const sampleInventoryItems = [
-  {
-    id: 1,
-    name: "Smartphone X",
-    sku: "EL-1234",
-    category: "Electronics",
-    quantity: 25,
-    warehouse: "north",
-    aisle: "A3",
-    price: 899,
-  },
-  {
-    id: 2,
-    name: "Laptop Pro",
-    sku: "EL-5678",
-    category: "Electronics",
-    quantity: 12,
-    warehouse: "north",
-    aisle: "A4",
-    price: 1299,
-  },
-  {
-    id: 3,
-    name: "Wireless Earbuds",
-    sku: "EL-9012",
-    category: "Electronics",
-    quantity: 50,
-    warehouse: "north",
-    aisle: "A2",
-    price: 129,
-  },
-  {
-    id: 4,
-    name: "Smart Watch",
-    sku: "EL-3456",
-    category: "Electronics",
-    quantity: 18,
-    warehouse: "north",
-    aisle: "A3",
-    price: 249,
-  },
-  {
-    id: 5,
-    name: "Office Chair",
-    sku: "FN-7890",
-    category: "Furniture",
-    quantity: 3,
-    warehouse: "north",
-    aisle: "B1",
-    price: 199,
-  },
-  {
-    id: 6,
-    name: "Desk",
-    sku: "FN-1234",
-    category: "Furniture",
-    quantity: 8,
-    warehouse: "north",
-    aisle: "B2",
-    price: 349,
-  },
-  {
-    id: 7,
-    name: "Gaming Console",
-    sku: "EL-1235",
-    category: "Electronics",
-    quantity: 2,
-    warehouse: "north",
-    aisle: "A1",
-    price: 499,
-  },
-  {
-    id: 8,
-    name: "Bookshelf",
-    sku: "FN-5432",
-    category: "Furniture",
-    quantity: 6,
-    warehouse: "north",
-    aisle: "B3",
-    price: 179,
-  },
-  {
-    id: 9,
-    name: "Coffee Table",
-    sku: "FN-8765",
-    category: "Furniture",
-    quantity: 4,
-    warehouse: "north",
-    aisle: "B2",
-    price: 249,
-  },
-  {
-    id: 10,
-    name: "Bluetooth Speaker",
-    sku: "EL-4321",
-    category: "Electronics",
-    quantity: 30,
-    warehouse: "north",
-    aisle: "A2",
-    price: 79,
-  },
-  {
-    id: 11,
-    name: "Tablet Pro",
-    sku: "EL-9876",
-    category: "Electronics",
-    quantity: 15,
-    warehouse: "north",
-    aisle: "A4",
-    price: 599,
-  },
-  {
-    id: 12,
-    name: "Ergonomic Keyboard",
-    sku: "CP-1122",
-    category: "Computer Accessories",
-    quantity: 22,
-    warehouse: "north",
-    aisle: "C1",
-    price: 129,
-  },
-  {
-    id: 13,
-    name: "Wireless Mouse",
-    sku: "CP-3344",
-    category: "Computer Accessories",
-    quantity: 35,
-    warehouse: "north",
-    aisle: "C1",
-    price: 49,
-  },
-  {
-    id: 14,
-    name: "27\" Monitor",
-    sku: "CP-5566",
-    category: "Computer Accessories",
-    quantity: 10,
-    warehouse: "north",
-    aisle: "C2",
-    price: 299,
-  }
-];

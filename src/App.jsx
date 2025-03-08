@@ -14,6 +14,7 @@ import SalesPrediction from "./lib/machineLearning";
 import Loginpage from "./components/loginpage";
 import InventoryAnalyzer from "./pages/inventory-analyzer";
 import Analysis from "./pages/analysis";
+import FifoLifo from "./pages/fifo-lifo-dashboard";
 
 function App() {
   const GEMINI_API_KEY = "AIzaSyDeeVJKQRiSrxUwRqXJ3zCbEVd9e5gSSHM";
@@ -47,6 +48,8 @@ function App() {
         <Route path="loginpage" element={<Loginpage />} />
         <Route path="analysis" element={<Analysis />} />
         <Route path="inventory-analysis" element={<InventoryAnalyzer />} />
+        <Route path="fifo-lifo" element={<FifoLifo
+         />} />
         <Route path="*" element={<Navigate to="/" replace />} />
         <Route
           path="inventory-analyzer"
