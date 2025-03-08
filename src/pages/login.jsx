@@ -24,6 +24,10 @@ export default function Login() {
     login({ name: username, location: "north" });
   };
 
+  const handleGoogleLogin = () => {
+    window.location.href = "http://localhost:5000/api/users/auth/google";
+  };
+
   return (
     <div className="flex h-screen items-center justify-center bg-muted/40">
       <Card className="w-[350px]">
@@ -58,6 +62,11 @@ export default function Login() {
               Sign In
             </Button>
           </form>
+          <div className="mt-4 flex justify-center">
+            <Button onClick={handleGoogleLogin} variant="outline">
+              Sign in with Google
+            </Button>
+          </div>
         </CardContent>
         <CardFooter>
           <p className="text-xs text-center w-full text-muted-foreground">

@@ -7,6 +7,7 @@ import Login from "./pages/login";
 import Settings from "./pages/settings";
 import CreateOrder from "./pages/createorder";
 import ClientDashboard from "./pages/client-dashboard";
+import SalesPrediction from "./lib/machineLearning";
 
 function App() {
   const { user, loading } = useAuth();
@@ -31,6 +32,8 @@ function App() {
         <Route path="settings" element={<Settings />} />
         <Route path="createorder" element={<CreateOrder />} />
         <Route path="client-dashboard" element={<ClientDashboard />} />
+        <Route path="machineLearning" element={<SalesPrediction />} />
+        <Route path="login" element={<Login />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
