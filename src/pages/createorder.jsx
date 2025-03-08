@@ -57,6 +57,7 @@ import {
   Filter,
   X,
   Info,
+  AlertCircle,
 } from "lucide-react";
 import { useAuth } from "../lib/auth-context";
 
@@ -82,13 +83,33 @@ export default function CreateOrder() {
   // State for product details
   const [showProductDetails, setShowProductDetails] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  
+  // State for payment selection
+  const [paymentModes, setPaymentModes] = useState([
+    { id: "UPI", name: "UPI" },
+    { id: "Card", name: "Card" },
+    { id: "NetBanking", name: "Net Banking" },
+    { id: "Cash", name: "Cash" },
+  ]);
+  
+  // Default payment mode for all items
+  const [defaultPaymentMode, setDefaultPaymentMode] = useState("UPI");
+  
+  // State for order submission
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  // State for notifications
+  const [notification, setNotification] = useState(null);
 
   // Fetch inventory items from API
   useEffect(() => {
     const fetchInventoryItems = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`http://localhost:5000/api/warehouseProducts/67cc52504bf2e035730c0d48`);
+        // Get token from localStorage
+        const token = localStorage.getItem('authToken');
+        
+        const response = await fetch(`http://localhost:5000/api/warehouseProducts/67cc52504bf2e035730c0d48`, {
+        });
         
         if (!response.ok) {
           throw new Error(`API request failed with status ${response.status}`);
@@ -108,6 +129,7 @@ export default function CreateOrder() {
           unit: item.product.unit,
           quantity: parseInt(item.quantity, 10),
           warehouse: warehouseLocation,
+          warehouseId: warehouseId, // Store warehouseId with each product
           lowStockThreshold: 5 // You might want to make this dynamic or get it from the product data
         }));
         
@@ -127,6 +149,15 @@ export default function CreateOrder() {
 
     fetchInventoryItems();
   }, [warehouseId, warehouseLocation]);
+
+  // Custom notification function (replacing toast)
+  const showNotification = (title, message, type = "info") => {
+    setNotification({ title, message, type });
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+      setNotification(null);
+    }, 5000);
+  };
 
   // Filter items by warehouse location, category, and search term
   const filteredItems = inventoryItems
@@ -166,7 +197,9 @@ export default function CreateOrder() {
           category: item.category,
           price: item.price,
           quantity: quantity,
-          total: quantity * item.price
+          total: quantity * item.price,
+          paymentMode: defaultPaymentMode, // Set default payment mode
+          warehouseId: warehouseId // Adding warehouseId to each order item
         }
       ]);
     }
@@ -199,6 +232,98 @@ export default function CreateOrder() {
           : orderItem
       )
     );
+  };
+
+  // Update payment mode for a specific order item
+  const updateOrderItemPaymentMode = (itemId, paymentMode) => {
+    setOrderItems(
+      orderItems.map(orderItem =>
+        orderItem.id === itemId
+          ? {
+              ...orderItem,
+              paymentMode: paymentMode
+            }
+          : orderItem
+      )
+    );
+  };
+
+  // Update payment mode for all order items
+  const updateAllPaymentModes = (paymentMode) => {
+    setDefaultPaymentMode(paymentMode);
+    setOrderItems(
+      orderItems.map(orderItem => ({
+        ...orderItem,
+        paymentMode: paymentMode
+      }))
+    );
+  };
+
+  // Submit order to API
+  const submitOrder = async () => {
+    if (orderItems.length === 0) return;
+
+    try {
+      setIsSubmitting(true);
+      
+      // Get token from localStorage
+      const token = localStorage.getItem('authToken');
+      
+      // Format the order data as expected by the API
+      const products = orderItems.map(item => ({
+        warehouseId: warehouseId,
+        productId: item.id,
+        paymentMode: item.paymentMode,
+        quantity: item.quantity.toString() // API expects quantity as a string
+      }));
+      
+      const orderData = {
+        products: products
+      };
+      
+      console.log("Submitting order:", orderData);
+      
+      const response = await fetch('http://localhost:5000/api/orders/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(orderData)
+      });
+      
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to create order');
+      }
+      
+      console.log("Order result:", result);
+      
+      // Display success message
+      showNotification(
+        "Success", 
+        `${result.message}. ${result.orders.count} products ordered.`,
+        "success"
+      );
+      
+      // Clear order items
+      setOrderItems([]);
+      setShowOrderSummary(false);
+      
+    } catch (err) {
+      console.error("Failed to submit order:", err);
+      
+      // Display error message
+      showNotification(
+        "Error", 
+        err.message || "Failed to submit order. Please try again.",
+        "error"
+      );
+      
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Calculate order totals
@@ -241,6 +366,31 @@ export default function CreateOrder() {
           </Tooltip>
         </TooltipProvider>
       </div>
+
+      {/* Notification */}
+      {notification && (
+        <div className={`p-4 rounded-md mb-4 ${
+          notification.type === 'error' ? 'bg-red-100 text-red-800' :
+          notification.type === 'success' ? 'bg-green-100 text-green-800' :
+          'bg-blue-100 text-blue-800'
+        }`}>
+          <div className="flex items-center">
+            {notification.type === 'error' && <AlertCircle className="h-5 w-5 mr-2" />}
+            {notification.type === 'success' && <Check className="h-5 w-5 mr-2" />}
+            {notification.type === 'info' && <Info className="h-5 w-5 mr-2" />}
+            <div>
+              <h3 className="font-medium">{notification.title}</h3>
+              <p className="text-sm">{notification.message}</p>
+            </div>
+            <button 
+              className="ml-auto"
+              onClick={() => setNotification(null)}
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Search and filters */}
       <Card>
@@ -516,6 +666,31 @@ export default function CreateOrder() {
               </div>
             ) : (
               <>
+                {/* Payment mode selection for all items */}
+                <div className="mb-4 p-4 border rounded-md">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Info className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm font-medium">Set payment mode for all items</span>
+                    </div>
+                    <Select 
+                      value={defaultPaymentMode} 
+                      onValueChange={updateAllPaymentModes}
+                    >
+                      <SelectTrigger className="w-[150px]">
+                        <SelectValue placeholder="Payment Mode" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {paymentModes.map(mode => (
+                          <SelectItem key={mode.id} value={mode.id}>
+                            {mode.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -523,6 +698,7 @@ export default function CreateOrder() {
                       <TableHead>Category</TableHead>
                       <TableHead className="text-center">Quantity</TableHead>
                       <TableHead className="text-center">Price</TableHead>
+                      <TableHead className="text-center">Payment</TableHead>
                       <TableHead className="text-right">Total</TableHead>
                       <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
@@ -558,6 +734,23 @@ export default function CreateOrder() {
                           </div>
                         </TableCell>
                         <TableCell className="text-center">${item.price.toFixed(2)}</TableCell>
+                        <TableCell className="text-center">
+                          <Select 
+                            value={item.paymentMode} 
+                            onValueChange={(value) => updateOrderItemPaymentMode(item.id, value)}
+                          >
+                            <SelectTrigger className="w-[120px]">
+                              <SelectValue placeholder="Payment" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {paymentModes.map(mode => (
+                                <SelectItem key={mode.id} value={mode.id}>
+                                  {mode.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
                         <TableCell className="text-right">${item.total.toFixed(2)}</TableCell>
                         <TableCell>
                           <Button
@@ -590,16 +783,17 @@ export default function CreateOrder() {
               Continue Shopping
             </Button>
             <Button 
-              disabled={orderItems.length === 0}
-              onClick={() => {
-                // Handle order submission
-                alert("Order submitted successfully!");
-                setOrderItems([]);
-                setShowOrderSummary(false);
-              }}
+              disabled={orderItems.length === 0 || isSubmitting}
+              onClick={submitOrder}
             >
-              <Check className="mr-2 h-4 w-4" />
-              Submit Order
+              {isSubmitting ? (
+                <>Processing...</>
+              ) : (
+                <>
+                  <Check className="mr-2 h-4 w-4" />
+                  Submit Order
+                </>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

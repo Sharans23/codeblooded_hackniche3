@@ -38,7 +38,7 @@ const ProductForm = () => {
         type: brand.toUpperCase() || "ELECTRONICS",
         price: parseFloat(productPrice) || 0,
         unit: productUnit || "units",
-        warehouseId: "67cc0e7d99576dcf159f91c8",
+        warehouseId: "67cc52504bf2e035730c0d48",
         quantity: quantity || "0",
       };
     
