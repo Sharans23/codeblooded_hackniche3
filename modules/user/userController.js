@@ -5,23 +5,29 @@ export const googleAuth = passport.authenticate("google", {
   scope: ["profile", "email"],
 });
 
-export const googleAuthCallback = passport.authenticate("google", {
-  successRedirect: "http://localhost:5173/dashboard",
-  failureRedirect: "http://localhost:5173/login",
-});
-// export const googleAuthCallback = (req, res, next) => {
-//   passport.authenticate("google",(err, user, info) => {
-//     if (err || !user) {
-//       return res.status(401).json({ error: "Authentication failed" });
-//     }
+// export const googleAuthCallback = passport.authenticate("google", {
+//   successRedirect: "http://localhost:5173/dashboard",
+//   failureRedirect: "http://localhost:5173/login",
+// });
+export const googleAuthCallback = (req, res, next) => {
+  passport.authenticate("google", (err, user, info) => {
     
-//     req.logIn(user, (err) => {
-//       if (err) return res.status(500).json({ error: "Login failed" });
-      
-//       res.json({ success: true, message: "Authenticated successfully", user });
-//     });
-//   })(req, res, next);
-// };
+    if (err || !user) {
+      return res.status(401).json({ error: "Authentication failed" });
+    }
+    
+    req.logIn(user, (err) => {
+      if (err) return res.status(500).json({ error: "Login failed" });
+      // console.log(user)
+      // res.json({ success: true, message: "Authenticated successfully", user });
+      // localStorage.setItem("id",user.id)
+      // localStorage.setItem("warehouseId",user.warehouse.warehouseId)
+      // res.
+
+      res.redirect(`http://localhost:5173/dashboard/${user.id}`);
+    });
+  })(req, res, next);
+};
 
 export const getUserProfile = async (req, res) => {
   try {
