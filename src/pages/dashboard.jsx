@@ -467,17 +467,19 @@ useEffect(() => {
 
         <TabsContent value="inventory-methods">
           <div className="grid gap-4 md:grid-cols-2">
+            {/* FIFO vs LIFO Distribution Card */}
             <Card>
               <CardHeader>
                 <CardTitle>Inventory Method Distribution</CardTitle>
                 <CardDescription>
-                  Products using FIFO vs LIFO inventory methods
+                  Track how FIFO and LIFO methods are used across your products.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center justify-center h-[300px]">
                   <div className="flex flex-col items-center">
                     <div className="relative h-64 w-64">
+                      {/* Animated Donut Chart */}
                       <div className="absolute inset-0 flex items-center justify-center">
                         <svg viewBox="0 0 100 100" className="h-full w-full">
                           <circle
@@ -502,9 +504,11 @@ useEffect(() => {
                               251.2
                             } 251.2`}
                             transform="rotate(-90 50 50)"
+                            className="animate-progress"
                           />
                         </svg>
                       </div>
+                      {/* Center Percentage */}
                       <div className="absolute inset-0 flex flex-col items-center justify-center">
                         <span className="text-3xl font-bold">
                           {Math.round(
@@ -519,6 +523,7 @@ useEffect(() => {
                         </span>
                       </div>
                     </div>
+                    {/* Legend and Counts */}
                     <div className="mt-4 grid grid-cols-2 gap-4 text-center">
                       <div>
                         <div className="flex items-center justify-center">
@@ -547,14 +552,24 @@ useEffect(() => {
                     </div>
                   </div>
                 </div>
+                {/* Explanation Section */}
+                <div className="mt-6 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    FIFO (First-In, First-Out) ensures older inventory is sold
+                    first, reducing the risk of obsolescence. LIFO (Last-In,
+                    First-Out) can help manage costs during inflation. Choose
+                    wisely based on your business needs.
+                  </p>
+                </div>
               </CardContent>
             </Card>
 
+            {/* Batch Management Card */}
             <Card>
               <CardHeader>
                 <CardTitle>Batch Management</CardTitle>
                 <CardDescription>
-                  Products with multiple batches
+                  Manage products with multiple batches efficiently.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -562,7 +577,7 @@ useEffect(() => {
                   {batchProducts.map((product) => (
                     <div
                       key={product.id}
-                      className="flex items-center justify-between rounded-lg border p-3"
+                      className="flex items-center justify-between rounded-lg border p-3 hover:bg-accent/50 transition-colors"
                     >
                       <div className="flex items-center space-x-4">
                         <div className="rounded-md bg-primary/10 p-2">
