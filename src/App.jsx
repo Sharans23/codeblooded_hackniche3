@@ -9,11 +9,11 @@ import ScanPage from "./pages/scan";
 import Settings from "./pages/settings";
 import CreateOrder from "./pages/createorder";
 import ClientDashboard from "./pages/client-dashboard";
-
 import SalesPrediction from "./lib/machineLearning";
 import Loginpage from "./components/loginpage";
 import InventoryAnalyzer from "./pages/inventory-analyzer";
 import Analysis from "./pages/analysis";
+import FifoLifo from "./pages/fifo-lifo-dashboard";
 
 function App() {
   const GEMINI_API_KEY = "AIzaSyDeeVJKQRiSrxUwRqXJ3zCbEVd9e5gSSHM";
@@ -47,10 +47,13 @@ function App() {
         <Route path="loginpage" element={<Loginpage />} />
         <Route path="analysis" element={<Analysis />} />
         <Route path="inventory-analysis" element={<InventoryAnalyzer />} />
+        <Route path="fifo-lifo" element={<FifoLifo
+         />} />
         <Route
           path="inventory-analyzer"
           element={<InventoryAnalyzer apiKey={GEMINI_API_KEY} />}
         />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
   );

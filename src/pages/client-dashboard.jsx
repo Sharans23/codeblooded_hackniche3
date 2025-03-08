@@ -33,9 +33,146 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import {
+  AlertCircle,
+  PackageCheck,
+  Truck,
+  AlertTriangle,
+  Layers,
+} from "lucide-react";
+import emailjs from "emailjs-com";
+
 
 export default function ClientDashboard() {
+  const [lowStockAlerts, setLowStockAlerts] = useState([
+    {
+      id: 1,
+      name: "Gaming Console",
+      sku: "EL-1235",
+      quantity: 2,
+      threshold: 5,
+      category: "Electronics",
+      emailSent: false,
+    },
+    {
+      id: 2,
+      name: "Office Chair",
+      sku: "FN-7890",
+      quantity: 3,
+      threshold: 5,
+      category: "Furniture",
+      emailSent: false,
+    },
+    {
+      id: 3,
+      name: "Winter Jacket",
+      sku: "CL-9012",
+      quantity: 7,
+      threshold: 10,
+      category: "Clothing",
+      emailSent: false,
+    },
+  ]);
+
   const { user } = useAuth();
+
+  // Function to check if a product is critically low (below 20% of threshold)
+  const isCriticallyLow = (quantity, threshold) => {
+    return quantity < threshold * 0.5;
+  };
+
+
+
+  // Function to send the actual email using EmailJS
+  const sendLowStockEmail = (product, stockPercentage) => {
+    const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+    const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+    const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+
+    console.log("env: ", serviceId, templateId, publicKey);
+
+    if (!serviceId || !templateId || !publicKey) {
+      console.error("EmailJS environment variables are missing.");
+      return;
+    }
+  
+    const templateParams = {
+      productId: product.id,
+      productName: product.name,
+      // currentStock: product.currentStock,
+      // totalStock: product.totalStock,
+      // stockPercentage: stockPercentage.toFixed(2),
+      // date: new Date().toLocaleString(),
+    };
+  
+    console.log("Sending low stock notification email:", templateParams);
+  
+    emailjs
+      .send(serviceId, templateId, templateParams, publicKey)
+      .then((response) => {
+        console.log("Low stock notification sent successfully!", response.status, response.text);
+      })
+      .catch((error) => {
+        console.error("Failed to send low stock notification:", error);
+      });
+  };
+  
+
+  useEffect(() => {
+    if (lowStockAlerts.length > 0) {
+      const checkCriticalStock = async () => {
+        console.log("Checking critical stock levels on initial render...");
+        
+        for (const product of lowStockAlerts) {
+          // Calculate stock percentage
+          const stockPercentage = (product.quantity / product.threshold) * 100;
+          
+          // Check if critically low (below 20%) and email not yet sent
+          if (isCriticallyLow(product.quantity, product.threshold) && !product.emailSent) {
+            console.log(`Critical stock alert for ${product.name}: ${stockPercentage.toFixed(2)}%`);
+            
+            // Create a properly formatted product object for the email function
+            const emailProduct = {
+              id: product.id,
+              name: product.name,
+              // currentStock: product.quantity,
+              // totalStock: product.threshold,
+              // sku: product.sku,
+              // category: product.category
+            };
+            
+            // Send the email with the calculated percentage
+            await sendLowStockEmail(emailProduct, stockPercentage);
+            
+            // Update the emailSent status in state to prevent duplicate emails
+            setLowStockAlerts(prevAlerts => 
+              prevAlerts.map(item => 
+                item.id === product.id ? { ...item, emailSent: true } : item
+              )
+            );
+          }
+        }
+      };
+      
+      // Run the check function on component mount (initial render)
+      checkCriticalStock();
+    }
+  }, []);
+  
+
+  // Handle manual reorder action
+  const handleReorder = async (productId) => {
+    const product = lowStockAlerts.find(item => item.id === productId);
+    if (product) {
+      const success = await sendLowStockEmail(product);
+      if (success) {
+        // You could add additional logic here, like showing a notification
+        console.log(`Reorder email sent for ${product.name}`);
+      }
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -326,8 +463,79 @@ export default function ClientDashboard() {
               </div>
             </div>
           </CardContent>
+                    
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Low Stock Alerts</CardTitle>
+          <CardDescription>Items that have fallen below their threshold levels</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {lowStockAlerts.map((alert) => {
+              const isCritical = isCriticallyLow(alert.quantity, alert.threshold);
+              const percentRemaining = (alert.quantity / alert.threshold) * 100;
+              
+              return (
+                <motion.div
+                  key={alert.id}
+                  className={`flex items-center justify-between rounded-lg border p-4 ${
+                    isCritical ? 'border-destructive' : ''
+                  }`}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className={`rounded-md ${isCritical ? 'bg-destructive' : 'bg-destructive/10'} p-2`}>
+                      <AlertTriangle className={`h-5 w-5 ${isCritical ? 'text-white' : 'text-destructive'}`} />
+                    </div>
+                    <div>
+                      <p className="font-medium">{alert.name}</p>
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        <span>SKU: {alert.sku}</span>
+                        <span className="mx-2">•</span>
+                        <span className={isCritical ? 'text-destructive font-bold' : 'text-destructive font-medium'}>
+                          {alert.quantity} / {alert.threshold} ({percentRemaining.toFixed(1)}%)
+                        </span>
+                        <span className="mx-2">•</span>
+                        <span>{alert.category}</span>
+                        {alert.emailSent && (
+                          <>
+                            <span className="mx-2">•</span>
+                            <span className="text-amber-500 flex items-center">
+                              <Clock className="h-3 w-3 mr-1" /> Email sent
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleReorder(alert.id)}
+                      disabled={alert.emailSent}
+                    >
+                      {alert.emailSent ? 'Email Sent' : 'Reorder'}
+                    </Button>
+                    <Button size="sm">Adjust Threshold</Button>
+                  </div>
+                </motion.div>
+              );
+            })}
+
+            {lowStockAlerts.length === 0 && (
+              <div className="flex h-[100px] items-center justify-center rounded-lg border border-dashed">
+                <p className="text-sm text-muted-foreground">No low stock alerts at this time.</p>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
