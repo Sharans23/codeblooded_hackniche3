@@ -157,8 +157,8 @@ export default function Dashboard() {
           <TabsTrigger value="inventory-methods">Inventory Methods</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+        <TabsContent value="overview" className="overflow-hidden">
+          <div className="grid gap-4 md:grid-cols-2  lg:grid-cols-7">
             <Card className="col-span-4">
               <CardHeader>
                 <CardTitle>Live Stock Tracking</CardTitle>
@@ -254,6 +254,97 @@ export default function Dashboard() {
                       </Button>
                     </div>
                   ))}
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="col-span-3">
+              <CardHeader>
+                <CardTitle>Transfer Requests</CardTitle>
+                <CardDescription>
+                  Pending stock transfers between warehouses
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {transferRequests.map((request) => (
+                    <div key={request.id} className="flex items-center">
+                      <div className="mr-4 flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
+                        <Truck className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <div className="flex-1 space-y-1">
+                        <p className="text-sm font-medium leading-none">
+                          {request.from} → {request.to}
+                          <Badge variant="outline" className="ml-2">
+                            {request.category}
+                          </Badge>
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {request.quantity} units • Requested: {request.date}
+                        </p>
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                        >
+                          <CheckCircle2 className="h-4 w-4" />
+                          <span className="sr-only">Approve</span>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                        >
+                          <AlertCircle className="h-4 w-4" />
+                          <span className="sr-only">Reject</span>
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="col-span-4">
+              <CardHeader>
+                <CardTitle>Barcode Scanner</CardTitle>
+                <CardDescription>
+                  Scan products to update inventory
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col items-center justify-center space-y-4 p-6 border-2 border-dashed rounded-lg">
+                  <Package className="h-12 w-12 text-muted-foreground" />
+                  <div className="text-center">
+                    <p className="text-sm font-medium">
+                      Scan a barcode or RFID tag
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Use the warehouse scanner or click the button below to use
+                      your device camera
+                    </p>
+                  </div>
+                  <Button>Open Scanner</Button>
+                </div>
+                <div className="mt-4">
+                  <h3 className="mb-2 text-sm font-medium">Recent Scans</h3>
+                  <div className="space-y-2">
+                    {recentScans.map((scan) => (
+                      <div
+                        key={scan.id}
+                        className="flex items-center justify-between rounded-md border p-2 text-sm"
+                      >
+                        <div className="flex items-center gap-2">
+                          <CheckCircle2 className="h-4 w-4 text-green-500" />
+                          <span>{scan.product}</span>
+                          <Badge variant="outline">{scan.sku}</Badge>
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          {scan.time}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -489,4 +580,37 @@ const batchProducts = [
   { id: 2, name: "Laptop Pro", method: "FIFO", batches: 2 },
   { id: 3, name: "Office Chair", method: "LIFO", batches: 2 },
   { id: 4, name: "Wireless Earbuds", method: "FIFO", batches: 4 },
+];
+
+const transferRequests = [
+  {
+    id: 1,
+    from: "South",
+    to: "North",
+    category: "Electronics",
+    quantity: 50,
+    date: "Today",
+  },
+  {
+    id: 2,
+    from: "East",
+    to: "North",
+    category: "Furniture",
+    quantity: 20,
+    date: "Yesterday",
+  },
+  {
+    id: 3,
+    from: "West",
+    to: "North",
+    category: "Clothing",
+    quantity: 100,
+    date: "Yesterday",
+  },
+];
+
+const recentScans = [
+  { id: 1, product: "Smartphone X", sku: "EL-1234", time: "5 mins ago" },
+  { id: 2, product: "Desk Chair", sku: "FN-5678", time: "12 mins ago" },
+  { id: 3, product: "Winter Jacket", sku: "CL-9012", time: "25 mins ago" },
 ];
