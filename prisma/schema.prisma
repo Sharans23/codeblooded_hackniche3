@@ -98,15 +98,16 @@ model ClientProduct {
 }
 
 model Order {
-  id             String    @id @default(auto()) @map("_id") @db.ObjectId
-  client         Client    @relation(fields: [clientId], references: [id])
-  product        Product   @relation(fields: [productId], references: [id])
-  warehouse      Warehouse @relation(fields: [warehouseId], references: [id])
-  paymentMode    String
-  paymentStatus  Boolean
-  quantity       String
-  inStock        Boolean
-  deliveryStatus String
+  id               String    @id @default(auto()) @map("_id") @db.ObjectId
+  client           Client    @relation(fields: [clientId], references: [id])
+  product          Product   @relation(fields: [productId], references: [id])
+  warehouse        Warehouse @relation(fields: [warehouseId], references: [id])
+  paymentMode      Payment
+  paymentStatus    Boolean
+  quantity         String
+  inStock          Boolean
+  deliveryStatus   Delivery 
+  expectedDelivery DateTime
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt()
@@ -152,4 +153,20 @@ enum Type {
   AUTOMOTIVE
   STATIONERY
   OTHER
+}
+
+enum Delivery {
+  ORDER_PLACED
+  PROCESSING
+  DISPATCHED
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+enum Payment {
+  UPI
+  COD 
+  NetBanking
+  Card
 }
