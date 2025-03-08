@@ -1,16 +1,19 @@
-import prisma from "../utils/prisma.js";
+import prisma from "../../utils/prisma.js";
 
 export const createClientProduct = async (req, res) => {
   try {
-    const { clientId, productId, quantity } = req.body;
+    const clientId = req.user.id;
+    const { productId, quantity } = req.body;
+    // console.log(clientId)
 
     const clientProduct = await prisma.clientProduct.create({
-      data: { clientId, productId, quantity },
+      data: { clientId:clientId, productId, quantity },
     });
 
     res.json(clientProduct);
   } catch (error) {
-    res.status(500).json({ error: "Error creating client product" });
+    console.log(error)
+    res.status(500).json(error);
   }
 };
 
