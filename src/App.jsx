@@ -4,12 +4,9 @@ import Layout from "./components/layout";
 import Dashboard from "./pages/dashboard";
 import Stock from "./pages/stocks";
 import Login from "./pages/login";
-<<<<<<< HEAD
 import Settings from "./pages/settings";
 import CreateOrder from "./pages/createorder";
-=======
 import ClientDashboard from "./pages/client-dashboard";
->>>>>>> c4b6485127580b6f7f0a438d79a87ea10bedc188
 
 function App() {
   const { user, loading } = useAuth();
