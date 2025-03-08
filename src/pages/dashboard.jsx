@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -43,6 +43,47 @@ import { motion } from "framer-motion";
 export default function Dashboard() {
   const { user } = useAuth();
   const warehouseLocation = user?.location || "north";
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  function getCookie(name) {
+    console.log(document.cookie)
+
+    const cookies = document.cookie.split('; ');
+    for (let cookie of cookies) {
+        let [key, value] = cookie.split('=');
+        if (key === name) {
+            return decodeURIComponent(value);
+        }
+    }
+    return null;
+}
+
+useEffect(() => {
+  fetch("https://b54pb2nm-5000.inc1.devtunnels.ms/hello",
+    {
+      credentials:"include"
+    }
+  )
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      return response.json();
+    })
+    .then((data) => {
+      setData(data);
+      setLoading(false);
+    })
+    .catch((error) => {
+      setError(error.message);
+      setLoading(false);
+    });
+}, []); 
+
+
+  
 
   const [lowStockAlerts, setLowStockAlerts] = useState([
     {

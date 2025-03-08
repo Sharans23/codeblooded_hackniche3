@@ -28,23 +28,42 @@ const ProductForm = () => {
   const [quantity, setQuantity] = useState(""); // Separate state for quantity
     const [productImage, setProductImage] = useState(null);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Handle form submission logic here
-    console.log("Form submitted:", {
-      productName,
-      codeProduct,
-      category,
-      brand,
-      barcodeSymbology,
-      productCost,
-      productPrice,
-      productUnit,
-      hasVariants,
-      quantity,
-        productImage,
-    });
-  };
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+    
+      const productData = {
+        name: productName,
+        code: codeProduct,
+        category: category.toUpperCase() || "NON_PERISHABLE",
+        type: brand.toUpperCase() || "ELECTRONICS",
+        price: parseFloat(productPrice) || 0,
+        unit: productUnit || "units",
+        warehouseId: "67cc0e7d99576dcf159f91c8",
+        quantity: quantity || "0",
+      };
+    
+      try {
+        const response = await fetch("http://localhost:5000/api/warehouseProducts/create", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(productData),
+        });
+    
+        const data = await response.json();
+        if (response.ok) {
+          alert("Product created successfully!");
+          console.log("Response:", data);
+        } else {
+          alert(`Error: ${data.message || "Failed to create product"}`);
+        }
+      } catch (error) {
+        console.error("Error submitting form:", error);
+        alert("Failed to create product. Please try again.");
+      }
+    };
+    
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -121,9 +140,9 @@ const ProductForm = () => {
                   <SelectValue placeholder="Choose Category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="electronics">Electronics</SelectItem>
-                  <SelectItem value="clothing">Clothing</SelectItem>
-                  <SelectItem value="books">Books</SelectItem>
+                  <SelectItem value="PERISHABLE">PERISHABLE</SelectItem>
+                  <SelectItem value="NON_PERISHABLE">NON_PERISHABLE</SelectItem>
+                  
                 </SelectContent>
               </Select>
             </div>
@@ -136,9 +155,13 @@ const ProductForm = () => {
                   <SelectValue placeholder="Choose Brand" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="nike">Nike</SelectItem>
-                  <SelectItem value="apple">Apple</SelectItem>
-                  <SelectItem value="generic">Generic</SelectItem>
+                  <SelectItem value="ELECTRONICS">ELECTRONICS</SelectItem>
+                  <SelectItem value="FOOD">FOOD</SelectItem>
+                  <SelectItem value="FURNITURE">  FURNITURE </SelectItem>
+                  <SelectItem value="MEDICINE">MEDICINE</SelectItem>
+                  <SelectItem value="BEAUTY">BEAUTY</SelectItem>
+                  <SelectItem value="TOOLS">TOOLS</SelectItem>
+                  <SelectItem value="TOYS">TOYS</SelectItem>
                 </SelectContent>
               </Select>
             </div>
