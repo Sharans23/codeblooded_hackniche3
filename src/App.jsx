@@ -47,8 +47,7 @@ function App() {
         <Route path="loginpage" element={<Loginpage />} />
         <Route path="analysis" element={<Analysis />} />
         <Route path="inventory-analysis" element={<InventoryAnalyzer />} />
-        <Route path="fifo-lifo" element={<FifoLifo
-         />} />
+        <Route path="fifo-lifo" element={<FifoLifo/>} />
         <Route
           path="inventory-analyzer"
           element={<InventoryAnalyzer apiKey={GEMINI_API_KEY} />}
