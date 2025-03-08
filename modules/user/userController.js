@@ -5,10 +5,23 @@ export const googleAuth = passport.authenticate("google", {
   scope: ["profile", "email"],
 });
 
-export const googleAuthCallback = passport.authenticate("google", {
-  successRedirect: "http://localhost:5173/dashboard",
-  failureRedirect: "http://localhost:5173/login",
-});
+// export const googleAuthCallback = passport.authenticate("google", {
+//   successRedirect: "http://localhost:5173/dashboard",
+//   failureRedirect: "http://localhost:5173/login",
+// });
+export const googleAuthCallback = (req, res, next) => {
+  passport.authenticate("google", (err, user, info) => {
+    if (err || !user) {
+      return res.status(401).json({ error: "Authentication failed" });
+    }
+    
+    req.logIn(user, (err) => {
+      if (err) return res.status(500).json({ error: "Login failed" });
+      
+      res.json({ success: true, message: "Authenticated successfully", user });
+    });
+  })(req, res, next);
+};
 
 export const getUserProfile = async (req, res) => {
   try {
@@ -17,6 +30,7 @@ export const getUserProfile = async (req, res) => {
       include: { warehouse: true },
     });
     res.json(user);
+    console.log(user);
   } catch (error) {
     res.status(500).json({ error: "Error fetching user profile" });
   }
