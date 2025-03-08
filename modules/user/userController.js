@@ -6,7 +6,7 @@ export const googleAuth = passport.authenticate("google", {
 });
 
 export const googleAuthCallback = passport.authenticate("google", {
-  successRedirect: "/dashboard",
+  successRedirect: "http://localhost:5173/dashboard",
   failureRedirect: "/login",
 });
 

@@ -34,6 +34,7 @@ model Warehouse {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt()
+  Order     Order[]
 }
 
 model Client {
@@ -49,6 +50,7 @@ model Client {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt()
+  Order     Order[]
 }
 
 model Product {
@@ -68,6 +70,7 @@ model Product {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt()
   Demand    Demand[]
+  Order     Order[]
 }
 
 model WarehouseProduct {
@@ -92,6 +95,24 @@ model ClientProduct {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt()
+}
+
+model Order {
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  client         Client    @relation(fields: [clientId], references: [id])
+  product        Product   @relation(fields: [productId], references: [id])
+  warehouse      Warehouse @relation(fields: [warehouseId], references: [id])
+  paymentMode    String
+  paymentStatus  Boolean
+  quantity       String
+  inStock        Boolean
+  deliveryStatus String
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt()
+  clientId    String   @db.ObjectId
+  productId   String   @db.ObjectId
+  warehouseId String   @db.ObjectId
 }
 
 model Demand {
