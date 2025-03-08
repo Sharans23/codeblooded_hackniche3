@@ -21,8 +21,9 @@ export default function Sidebar({ open, setOpen }) {
     { name: "Dashboard", href: "/", icon: Home },
     { name: "Stock", href: "/stock", icon: Package },
     { name: "Transfers", href: "/transfers", icon: Box },
+    { name: "Create Product", href: "/createproduct", icon: Settings },
     { name: "Shipping", href: "/shipping", icon: Truck },
-    { name: "Reports", href: "/reports", icon: FileText },
+    { name: "Scan QR", href: "/scanqr", icon: FileText },
     { name: "Settings", href: "/settings", icon: Settings },
   ];
 
