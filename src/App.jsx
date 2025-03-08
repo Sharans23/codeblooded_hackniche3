@@ -7,6 +7,9 @@ import ProductForm from "./pages/createProduct";
 import Login from "./pages/login";
 import GeneratePage from "./pages/generate";
 import ScanPage from "./pages/scan";
+import Settings from "./pages/settings";
+import CreateOrder from "./pages/createorder";
+import ClientDashboard from "./pages/client-dashboard";
 
 function App() {
   const { user, loading } = useAuth();
@@ -30,6 +33,9 @@ function App() {
         <Route path="stock" element={<Stock />} />
         <Route path="createproduct" element={<ProductForm />} />
         <Route path="scanqr" element={<ScanPage />} />
+        <Route path="settings" element={<Settings />} />
+        <Route path="createorder" element={<CreateOrder />} />
+        <Route path="client-dashboard" element={<ClientDashboard />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
