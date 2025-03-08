@@ -9,13 +9,29 @@ import {
   Settings,
   Truck,
   User,
+  Moon,
+  Sun,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "../contexts/auth-context";
+import { useEffect, useState } from "react";
 
 export default function Sidebar({ open, setOpen }) {
   const location = useLocation();
   const { user, logout } = useAuth();
+  const [darkMode, setDarkMode] = useState(
+    () => localStorage.getItem("theme") === "dark"
+  );
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  }, [darkMode]);
 
   const navigation = [
     { name: "Dashboard", href: "/", icon: Home },
@@ -42,50 +58,7 @@ export default function Sidebar({ open, setOpen }) {
             <span className="ml-2 text-lg font-semibold">Inventory</span>
           )}
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setOpen(!open)}
-          className={!open ? "hidden" : ""}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="m15 18-6-6 6-6" />
-          </svg>
-        </Button>
       </div>
-
-      {!open && (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setOpen(!open)}
-          className="absolute -right-3 top-20 h-6 w-6 rounded-full border bg-background"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="m9 18 6-6-6-6" />
-          </svg>
-        </Button>
-      )}
 
       <div className="flex-1 overflow-y-auto py-4">
         <nav className="space-y-1 px-2">
@@ -118,22 +91,25 @@ export default function Sidebar({ open, setOpen }) {
       </div>
 
       <div className="border-t p-4">
-        <div className={`flex items-center ${!open && "justify-center"}`}>
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-            <User className="h-4 w-4 text-primary" />
-          </div>
-          {open && (
-            <div className="ml-3">
-              <p className="text-sm font-medium">
-                {user?.name || "Warehouse Manager"}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {user?.location || "North"} Warehouse
-              </p>
-            </div>
-          )}
+        <div className="flex items-center justify-between">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setDarkMode(!darkMode)}
+            className="w-full flex items-center justify-center"
+          >
+            {darkMode ? (
+              <Sun className="h-5 w-5 text-yellow-500" />
+            ) : (
+              <Moon className="h-5 w-5 text-gray-700" />
+            )}
+            {open && (
+              <span className="ml-2">
+                {darkMode ? "Light Mode" : "Dark Mode"}
+              </span>
+            )}
+          </Button>
         </div>
-
         <Button
           variant="ghost"
           size={open ? "default" : "icon"}
