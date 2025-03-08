@@ -149,7 +149,7 @@ const ProductForm = () => {
 
             {/* Brand */}
             <div>
-              <Label style={{marginBottom:'5px'}} htmlFor="brand">Brand</Label>
+              <Label style={{marginBottom:'5px'}} htmlFor="brand">Category</Label>
               <Select onValueChange={(value) => setBrand(value)}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Choose Brand" />

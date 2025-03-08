@@ -59,28 +59,45 @@ export default function Dashboard() {
     }
     return null;
 }
-
 useEffect(() => {
-  fetch("https://b54pb2nm-5000.inc1.devtunnels.ms/hello",
-    {
-      credentials:"include"
+  const fetchUser = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/api/users/profile", {
+        method: "GET",
+        credentials: "include", // Required for cookies/session to be sent
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await res.json();
+      console.log(data);
+    } catch (error) {
+      console.error("Failed to fetch user", error);
     }
-  )
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      return response.json();
-    })
-    .then((data) => {
-      setData(data);
-      setLoading(false);
-    })
-    .catch((error) => {
-      setError(error.message);
-      setLoading(false);
-    });
-}, []); 
+  };
+  fetchUser();
+}, []);
+// useEffect(() => {
+//   fetch("https://b54pb2nm-5000.inc1.devtunnels.ms/api/users/profile",
+//     {
+//       credentials:"include"
+//     }
+//   )
+//     .then((response) => {
+//       if (!response.ok) {
+//         throw new Error("Network response was not ok");
+//       }
+//       return response.json();
+//     })
+//     .then((data) => {
+//       setData(data);
+//       setLoading(false);
+//     })
+//     .catch((error) => {
+//       setError(error.message);
+//       setLoading(false);
+//     });
+// }, []); 
 
 
   
