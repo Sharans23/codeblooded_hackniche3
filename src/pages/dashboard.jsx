@@ -46,6 +46,36 @@ export default function Dashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [incomingShipments, setIncomingShipments] = useState([
+    {
+      id: 1,
+      supplier: "Tech Supplies Inc.",
+      items: 120,
+      eta: "10:30 AM",
+      status: "on-time",
+    },
+    {
+      id: 2,
+      supplier: "Furniture Depot",
+      items: 45,
+      eta: "12:15 PM",
+      status: "delayed",
+    },
+    {
+      id: 3,
+      supplier: "Fashion Wholesale",
+      items: 200,
+      eta: "2:00 PM",
+      status: "on-time",
+    },
+    {
+      id: 4,
+      supplier: "Electronics Hub",
+      items: 75,
+      eta: "4:30 PM",
+      status: "critical",
+    },
+  ]);
   
   function getCookie(name) {
     console.log(document.cookie)
@@ -76,6 +106,35 @@ useEffect(() => {
     }
   };
   fetchUser();
+}, []);
+ // Function to fetch shipping history from local storage
+ useEffect(() => {
+  try {
+    // Get shipping history from local storage
+    const shippingHistoryString = localStorage.getItem('shippingHistory');
+    
+    if (shippingHistoryString) {
+      const shippingHistory = JSON.parse(shippingHistoryString);
+      
+      // Convert shipping history items to incoming shipment format
+      const historyShipments = shippingHistory.map((item) => {
+        return {
+          id: item.id,
+          supplier: `${item.productName} (${item.productCode})`,
+          items: item.quantity,
+          eta: new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          status: "on-time", // Default status
+          price: item.price,
+          totalValue: item.totalValue
+        };
+      });
+      
+      // Add the new shipments to the existing ones
+      setIncomingShipments(prevShipments => [...prevShipments, ...historyShipments]);
+    }
+  } catch (error) {
+    console.error("Error fetching shipping history from local storage:", error);
+  }
 }, []);
 // useEffect(() => {
 //   fetch("https://b54pb2nm-5000.inc1.devtunnels.ms/api/users/profile",
@@ -268,53 +327,59 @@ useEffect(() => {
                 </ResponsiveContainer>
               </CardContent>
             </Card>
-            <Card className="col-span-3">
-              <CardHeader>
-                <CardTitle>Incoming Shipments</CardTitle>
-                <CardDescription>Expected deliveries for today</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {incomingShipments.map((shipment) => (
-                    <div key={shipment.id} className="flex items-center">
-                      <div
-                        className={`mr-4 flex h-8 w-8 items-center justify-center rounded-full ${
-                          shipment.status === "on-time"
-                            ? "bg-green-100 dark:bg-green-900"
-                            : shipment.status === "delayed"
-                            ? "bg-amber-100 dark:bg-amber-900"
-                            : "bg-red-100 dark:bg-red-900"
-                        }`}
-                      >
-                        {shipment.status === "on-time" && (
-                          <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
-                        )}
-                        {shipment.status === "delayed" && (
-                          <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                        )}
-                        {shipment.status === "critical" && (
-                          <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
-                        )}
-                      </div>
-                      <div className="flex-1 space-y-1">
-                        <p className="text-sm font-medium leading-none">
-                          {shipment.supplier}
-                          <Badge variant="outline" className="ml-2">
-                            {shipment.items} items
-                          </Badge>
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          ETA: {shipment.eta}
-                        </p>
-                      </div>
-                      <Button variant="outline" size="sm">
-                        Details
-                      </Button>
-                    </div>
-                  ))}
+            
+      <Card className="col-span-3">
+        <CardHeader>
+          <CardTitle>Incoming Shipments</CardTitle>
+          <CardDescription>Expected deliveries for today</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {incomingShipments.map((shipment) => (
+              <div key={shipment.id} className="flex items-center">
+                <div
+                  className={`mr-4 flex h-8 w-8 items-center justify-center rounded-full ${
+                    shipment.status === "on-time"
+                      ? "bg-green-100 dark:bg-green-900"
+                      : shipment.status === "delayed"
+                      ? "bg-amber-100 dark:bg-amber-900"
+                      : "bg-red-100 dark:bg-red-900"
+                  }`}
+                >
+                  {shipment.status === "on-time" && (
+                    <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
+                  )}
+                  {shipment.status === "delayed" && (
+                    <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                  )}
+                  {shipment.status === "critical" && (
+                    <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
+                  )}
                 </div>
-              </CardContent>
-            </Card>
+                <div className="flex-1 space-y-1">
+                  <p className="text-sm font-medium leading-none">
+                    {shipment.supplier}
+                    <Badge variant="outline" className="ml-2">
+                      {shipment.items} items
+                    </Badge>
+                    {shipment.totalValue && (
+                      <Badge variant="secondary" className="ml-2">
+                        ${shipment.totalValue}
+                      </Badge>
+                    )}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    ETA: {shipment.eta}
+                  </p>
+                </div>
+                <Button variant="outline" size="sm">
+                  Details
+                </Button>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
             <Card className="col-span-3">
               <CardHeader>
                 <CardTitle>Transfer Requests</CardTitle>
