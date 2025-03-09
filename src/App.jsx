@@ -39,12 +39,12 @@ function App() {
         <Route path="stock" element={<Stock />} />
         <Route path="createproduct" element={<ProductForm />} />
         <Route path="scanqr" element={<ScanPage />} />
-        <Route path="settings" element={<Settings />} />
+        {/* <Route path="settings" element={<Settings />} /> */}
         <Route path="createorder" element={<CreateOrder />} />
         <Route path="client-dashboard" element={<ClientDashboard />} />
-        <Route path="machineLearning" element={<SalesPrediction />} />
+        {/* <Route path="machineLearning" element={<SalesPrediction />} /> */}
         <Route path="login" element={<Login />} />
-        <Route path="loginpage" element={<Loginpage />} />
+        {/* <Route path="loginpage" element={<Loginpage />} /> */}
         <Route path="analysis" element={<Analysis />} />
         <Route path="inventory-analysis" element={<InventoryAnalyzer />} />
         <Route path="fifo-lifo" element={<FifoLifo/>} />

@@ -22,6 +22,7 @@ export default function Sidebar({ open, setOpen }) {
   const [darkMode, setDarkMode] = useState(
     () => localStorage.getItem("theme") === "dark"
   );
+  const userRole = localStorage.getItem("userRole") || "client";
 
   useEffect(() => {
     if (darkMode) {
@@ -33,7 +34,7 @@ export default function Sidebar({ open, setOpen }) {
     }
   }, [darkMode]);
 
-  const navigation = [
+  const adminNavigation = [
     { name: "Dashboard", href: "/", icon: Home },
     { name: "Stock", href: "/stock", icon: Package },
     { name: "Transfers", href: "/transfers", icon: Box },
@@ -43,11 +44,20 @@ export default function Sidebar({ open, setOpen }) {
     { name: "Settings", href: "/settings", icon: Settings },
   ];
 
+  const clientNavigation = [
+    { name: "Dashboard", href: "/", icon: Home },
+    { name: "Orders", href: "/orders", icon: Box },
+    { name: "Inventory", href: "/inventory", icon: Package },
+    { name: "Settings", href: "/settings", icon: Settings },
+  ];
+
+  const navigation = userRole === "admin" ? adminNavigation : clientNavigation;
+
   return (
     <div
       className={`${
         open ? "w-64" : "w-20"
-      } relative flex h-full flex-col border-r bg-background transition-all duration-300 ease-in-out`}
+      } relative flex h-screen flex-col border-r bg-background transition-all duration-300 ease-in-out`}
     >
       <div className="flex h-16 items-center justify-between px-4">
         <div
@@ -90,30 +100,28 @@ export default function Sidebar({ open, setOpen }) {
         </nav>
       </div>
 
-      <div className="border-t p-4">
-        <div className="flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setDarkMode(!darkMode)}
-            className="w-full flex items-center justify-center"
-          >
-            {darkMode ? (
-              <Sun className="h-5 w-5 text-yellow-500" />
-            ) : (
-              <Moon className="h-5 w-5 text-gray-700" />
-            )}
-            {open && (
-              <span className="ml-2">
-                {darkMode ? "Light Mode" : "Dark Mode"}
-              </span>
-            )}
-          </Button>
-        </div>
+      <div className="border-t p-4 mt-auto flex flex-col space-y-4">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setDarkMode(!darkMode)}
+          className="w-full flex items-center justify-center"
+        >
+          {darkMode ? (
+            <Sun className="h-5 w-5 text-yellow-500" />
+          ) : (
+            <Moon className="h-5 w-5 text-gray-700" />
+          )}
+          {open && (
+            <span className="ml-2">
+              {darkMode ? "Light Mode" : "Dark Mode"}
+            </span>
+          )}
+        </Button>
         <Button
           variant="ghost"
           size={open ? "default" : "icon"}
-          className="mt-4 w-full"
+          className="w-full"
           onClick={logout}
         >
           <LogOut className="h-4 w-4" />
