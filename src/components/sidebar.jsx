@@ -37,18 +37,18 @@ export default function Sidebar({ open, setOpen }) {
   const adminNavigation = [
     { name: "Dashboard", href: "/", icon: Home },
     { name: "Stock", href: "/stock", icon: Package },
-    { name: "Transfers", href: "/transfers", icon: Box },
     { name: "Create Product", href: "/createproduct", icon: Settings },
-    { name: "Shipping", href: "/shipping", icon: Truck },
     { name: "Scan QR", href: "/scanqr", icon: FileText },
-    { name: "Settings", href: "/settings", icon: Settings },
+    { name: "Fifo-Lifo", href: "/fifo-lifo", icon: Box },
   ];
 
   const clientNavigation = [
     { name: "Dashboard", href: "/", icon: Home },
     { name: "Orders", href: "/orders", icon: Box },
-    { name: "Inventory", href: "/inventory", icon: Package },
-    { name: "Settings", href: "/settings", icon: Settings },
+    { name: "Create Order", href: "/createorder", icon: Truck },
+    { name: "Analysis", href: "/analysis", icon: BarChart2 },
+    { name: "Map", href: "/map", icon: Truck },
+ 
   ];
 
   const navigation = userRole === "admin" ? adminNavigation : clientNavigation;
@@ -57,7 +57,7 @@ export default function Sidebar({ open, setOpen }) {
     <div
       className={`${
         open ? "w-64" : "w-20"
-      } relative flex h-screen flex-col border-r bg-background transition-all duration-300 ease-in-out`}
+      } relative flex h-full flex-col border-r bg-background transition-all duration-300 ease-in-out`}
     >
       <div className="flex h-16 items-center justify-between px-4">
         <div
