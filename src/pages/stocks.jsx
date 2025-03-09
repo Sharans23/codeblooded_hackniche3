@@ -65,18 +65,72 @@ export default function Stock() {
   const [selectedItemMovements, setSelectedItemMovements] = useState(null);
 
   // Initialize enhanced inventory items
-  useEffect(() => {
-    // Add batch information and inventory method to each item
-    const enhanced = inventoryItems.map((item) => ({
-      ...item,
-      inventoryMethod: item.inventoryMethod || "FIFO", // Default to FIFO
-      lowStockThreshold: item.lowStockThreshold || 5,
-      batches: item.batches || generateMockBatches(item),
-      movements: item.movements || generateMockMovements(item),
-    }));
+  // Add loading state at the top with other state variables
+  const [loading, setLoading] = useState(false);
 
-    setEnhancedInventoryItems(enhanced);
-  }, []);
+  // Replace the current useEffect with this API call implementation
+  useEffect(() => {
+    const fetchInventoryItems = async () => {
+      try {
+        setLoading(true);
+        // Get token from localStorage
+        const token = localStorage.getItem('authToken');
+
+        const response = await fetch(`http://localhost:5000/api/warehouseProducts/67cc52504bf2e035730c0d48`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`API request failed with status ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // Transform API data to match our frontend structure
+        const transformedItems = data.map(item => ({
+          id: item.id,
+          name: item.product.name,
+          sku: item.product.code,
+          category: item.product.type,
+          quantity: parseInt(item.quantity),
+          warehouse: warehouseLocation, // Use current warehouse location
+          aisle: "A1", // Default value as API doesn't provide this
+          price: item.product.price,
+          inventoryMethod: "FIFO", // Default as API doesn't provide this
+          lowStockThreshold: 5, // Default threshold
+          batches: generateMockBatches({
+            id: item.id,
+            quantity: parseInt(item.quantity),
+            price: item.product.price
+          }),
+          movements: generateMockMovements({
+            id: item.id,
+            quantity: parseInt(item.quantity)
+          }),
+        }));
+
+        setEnhancedInventoryItems(transformedItems);
+      } catch (error) {
+        console.error("Error fetching inventory data:", error);
+        // Fallback to sample data if API fails
+        const enhanced = inventoryItems.map((item) => ({
+          ...item,
+          inventoryMethod: item.inventoryMethod || "FIFO",
+          lowStockThreshold: item.lowStockThreshold || 5,
+          batches: item.batches || generateMockBatches(item),
+          movements: item.movements || generateMockMovements(item),
+        }));
+        setEnhancedInventoryItems(enhanced);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInventoryItems();
+  }, [warehouseLocation]);
 
   // Filter items by warehouse location and search term
   const filteredItems = enhancedInventoryItems
@@ -222,102 +276,106 @@ export default function Stock() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Product</TableHead>
-                    <TableHead>SKU</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Method</TableHead>
-                    <TableHead className="text-center">Quantity</TableHead>
-                    <TableHead className="text-center">Threshold</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredItems.length === 0 ? (
+              {loading ? (
+                <div className="flex justify-center items-center h-40">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
                     <TableRow>
-                      <TableCell colSpan={7} className="h-24 text-center">
-                        No items found.
-                      </TableCell>
+                      <TableHead>Product</TableHead>
+                      <TableHead>SKU</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Method</TableHead>
+                      <TableHead className="text-center">Quantity</TableHead>
+                      <TableHead className="text-center">Threshold</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
-                  ) : (
-                    filteredItems.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell className="font-medium">
-                          {item.name}
-                        </TableCell>
-                        <TableCell>{item.sku}</TableCell>
-                        <TableCell>{item.category}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className="cursor-pointer">
-                            {item.inventoryMethod}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <span
-                            className={`${
-                              item.quantity <= item.lowStockThreshold
-                                ? "text-destructive"
-                                : item.quantity <= item.lowStockThreshold * 2
-                                ? "text-amber-500"
-                                : "text-green-500"
-                            }`}
-                          >
-                            {item.quantity}
-                          </span>
-                          {item.quantity <= item.lowStockThreshold && (
-                            <Badge
-                              variant="destructive"
-                              className="ml-2 text-xs"
-                            >
-                              Low
-                            </Badge>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <Badge variant="secondary" className="cursor-pointer">
-                            {item.lowStockThreshold}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end space-x-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              title="Adjust Quantity"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => {
-                                setSelectedItemBatches(item);
-                                setShowBatchDetails(true);
-                              }}
-                              title="View Batches"
-                            >
-                              <Layers className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => {
-                                setSelectedItemMovements(item);
-                                setShowMovementHistory(true);
-                              }}
-                              title="Movement History"
-                            >
-                              <History className="h-4 w-4" />
-                            </Button>
-                          </div>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredItems.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="h-24 text-center">
+                          No items found.
                         </TableCell>
                       </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
+                    ) : (
+                      filteredItems.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell className="font-medium">
+                            {item.name}
+                          </TableCell>
+                          <TableCell>{item.sku}</TableCell>
+                          <TableCell>{item.category}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="cursor-pointer">
+                              {item.inventoryMethod}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <span
+                              className={`${item.quantity <= item.lowStockThreshold
+                                  ? "text-destructive"
+                                  : item.quantity <= item.lowStockThreshold * 2
+                                    ? "text-amber-500"
+                                    : "text-green-500"
+                                }`}
+                            >
+                              {item.quantity}
+                            </span>
+                            {item.quantity <= item.lowStockThreshold && (
+                              <Badge
+                                variant="destructive"
+                                className="ml-2 text-xs"
+                              >
+                                Low
+                              </Badge>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Badge variant="secondary" className="cursor-pointer">
+                              {item.lowStockThreshold}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end space-x-1">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                title="Adjust Quantity"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => {
+                                  setSelectedItemBatches(item);
+                                  setShowBatchDetails(true);
+                                }}
+                                title="View Batches"
+                              >
+                                <Layers className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => {
+                                  setSelectedItemMovements(item);
+                                  setShowMovementHistory(true);
+                                }}
+                                title="Movement History"
+                              >
+                                <History className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>)}
             </CardContent>
             <CardFooter className="flex justify-between">
               <div className="text-sm text-muted-foreground">
@@ -371,12 +429,12 @@ export default function Stock() {
                 {filteredItems.filter(
                   (item) => item.quantity <= item.lowStockThreshold
                 ).length === 0 && (
-                  <div className="flex h-[100px] items-center justify-center rounded-lg border border-dashed">
-                    <p className="text-sm text-muted-foreground">
-                      No low stock items found.
-                    </p>
-                  </div>
-                )}
+                    <div className="flex h-[100px] items-center justify-center rounded-lg border border-dashed">
+                      <p className="text-sm text-muted-foreground">
+                        No low stock items found.
+                      </p>
+                    </div>
+                  )}
               </div>
             </CardContent>
           </Card>
@@ -504,10 +562,10 @@ export default function Stock() {
                             movement.type === "Received"
                               ? "default"
                               : movement.type === "Shipped"
-                              ? "destructive"
-                              : movement.type === "Transferred"
-                              ? "outline"
-                              : "secondary"
+                                ? "destructive"
+                                : movement.type === "Transferred"
+                                  ? "outline"
+                                  : "secondary"
                           }
                         >
                           {movement.type}

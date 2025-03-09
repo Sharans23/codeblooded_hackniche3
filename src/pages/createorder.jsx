@@ -109,6 +109,7 @@ export default function CreateOrder() {
         const token = localStorage.getItem('authToken');
         
         const response = await fetch(`http://localhost:5000/api/warehouseProducts/67cc52504bf2e035730c0d48`, {
+
         });
         
         if (!response.ok) {

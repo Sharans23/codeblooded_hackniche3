@@ -79,8 +79,28 @@ const QRCodeScanner = () => {
     setError(null);
     setShippingAlert(true);
     
-    // In a real application, you would make an API call here to update inventory
+    // Store shipping details in localStorage
+    const shippingDetails = {
+      id: Date.now(), // Unique ID for the shipping record
+      timestamp: new Date().toISOString(),
+      productCode: matchedProduct.product.code,
+      productName: matchedProduct.product.name,
+      price: matchedProduct.product.price,
+      quantity: quantity,
+      totalValue: matchedProduct.product.price * quantity
+    };
+    
+    // Get existing shipping history or initialize empty array
+    const existingHistory = JSON.parse(localStorage.getItem('shippingHistory') || '[]');
+    
+    // Add new shipping record to history
+    const updatedHistory = [shippingDetails, ...existingHistory];
+    
+    // Save updated history back to localStorage
+    localStorage.setItem('shippingHistory', JSON.stringify(updatedHistory));
+    
     console.log(`Shipping ${quantity} units of ${matchedProduct.product.name}`);
+    console.log("Shipping details saved to localStorage:", shippingDetails);
   };
 
   return (
@@ -130,6 +150,7 @@ const QRCodeScanner = () => {
               <AlertTitle>Success</AlertTitle>
               <AlertDescription>
                 {quantity} units of {matchedProduct.product.name} are ready to be shipped!
+                <p className="mt-1 text-sm">Shipping details have been saved.</p>
               </AlertDescription>
             </Alert>
           )}

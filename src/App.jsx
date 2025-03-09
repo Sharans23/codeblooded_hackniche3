@@ -14,6 +14,7 @@ import Loginpage from "./components/loginpage";
 import InventoryAnalyzer from "./pages/inventory-analyzer";
 import Analysis from "./pages/analysis";
 import FifoLifo from "./pages/fifo-lifo-dashboard";
+import Map from "./pages/map";
 
 function App() {
   const GEMINI_API_KEY = "AIzaSyDeeVJKQRiSrxUwRqXJ3zCbEVd9e5gSSHM";
@@ -46,6 +47,7 @@ function App() {
         <Route path="login" element={<Login />} />
         {/* <Route path="loginpage" element={<Loginpage />} /> */}
         <Route path="analysis" element={<Analysis />} />
+        <Route path="map" element={<Map />} />
         <Route path="inventory-analysis" element={<InventoryAnalyzer />} />
         <Route path="fifo-lifo" element={<FifoLifo/>} />
         <Route
