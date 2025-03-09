@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 const QRCodeScanner = () => {
   const [rfid, setRfid] = useState("");
@@ -11,6 +12,8 @@ const QRCodeScanner = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [matchedProduct, setMatchedProduct] = useState(null);
+  const [quantity, setQuantity] = useState(1);
+  const [shippingAlert, setShippingAlert] = useState(false);
 
   // Fetch all products when component mounts
   useEffect(() => {
@@ -27,7 +30,7 @@ const QRCodeScanner = () => {
         }
         
         const data = await response.json();
-        console.log(data)
+        console.log(data);
         setProducts(data);
         setLoading(false);
       } catch (err) {
@@ -50,6 +53,7 @@ const QRCodeScanner = () => {
         setError(`No product found with RFID: ${rfid}`);
       } else {
         setError(null);
+        setQuantity(1); // Reset quantity when new product is found
       }
     }
   }, [rfid, products]);
@@ -58,6 +62,25 @@ const QRCodeScanner = () => {
     setRfid("");
     setMatchedProduct(null);
     setError(null);
+    setShippingAlert(false);
+  };
+
+  const handleShipProduct = () => {
+    if (quantity > matchedProduct.product.stock) {
+      setError(`Cannot ship more than available stock (${matchedProduct.product.stock} units)`);
+      return;
+    }
+    
+    if (quantity <= 0) {
+      setError("Quantity must be greater than zero");
+      return;
+    }
+    
+    setError(null);
+    setShippingAlert(true);
+    
+    // In a real application, you would make an API call here to update inventory
+    console.log(`Shipping ${quantity} units of ${matchedProduct.product.name}`);
   };
 
   return (
@@ -85,6 +108,7 @@ const QRCodeScanner = () => {
                     console.error("Unexpected result format:", result);
                   }
                   setError(null);
+                  setShippingAlert(false);
                 }}
                 onError={(error) => {
                   console.error("QR Scan Error:", error);
@@ -98,6 +122,15 @@ const QRCodeScanner = () => {
             <Alert variant="destructive" className="mb-4 w-full max-w-md">
               <AlertTitle>Error</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {shippingAlert && (
+            <Alert className="mb-4 w-full max-w-md">
+              <AlertTitle>Success</AlertTitle>
+              <AlertDescription>
+                {quantity} units of {matchedProduct.product.name} are ready to be shipped!
+              </AlertDescription>
             </Alert>
           )}
 
@@ -131,10 +164,38 @@ const QRCodeScanner = () => {
                       <p className="text-lg">{matchedProduct.product.stock} units</p>
                     </div>
                   </div>
+                  
+                  <div className="mt-4">
+                    <label htmlFor="quantity" className="block text-sm font-medium mb-1">
+                      Quantity to Ship
+                    </label>
+                    <Input
+                      id="quantity"
+                      type="number"
+                      min="1"
+                      max={matchedProduct.product.stock}
+                      value={quantity}
+                      onChange={(e) => setQuantity(parseInt(e.target.value) || 0)}
+                      className="w-full"
+                    />
+                  </div>
                 </div>
               </CardContent>
-              <CardFooter>
-                <Button onClick={resetScanner} className="w-full">Scan Another Product</Button>
+              <CardFooter className="flex flex-col gap-2">
+                <Button 
+                  onClick={handleShipProduct} 
+                  className="w-full"
+                  variant="default"
+                >
+                  Ship Product
+                </Button>
+                <Button 
+                  onClick={resetScanner} 
+                  className="w-full"
+                  variant="outline"
+                >
+                  Scan Another Product
+                </Button>
               </CardFooter>
             </Card>
           )}
