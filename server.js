@@ -77,6 +77,13 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
+
+app.use((req, res, next) => {
+  console.log("Session:", req.session);
+  console.log("User:", req.user);
+  next();
+});
+
 app.use("/api/users", userRoutes);
 app.use("/api/warehouses", warehouseRoutes);
 app.use("/api/clients", clientRoutes);
@@ -95,11 +102,5 @@ app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Credentials", "true");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  next();
-});
-
-app.use((req, res, next) => {
-  console.log("Session:", req.session);
-  console.log("User:", req.user);
   next();
 });
