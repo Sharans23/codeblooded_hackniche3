@@ -30,7 +30,8 @@ passport.use(
           });
         }
         
-        req.session.userId = user.id; // Store user ID in session
+        req.session.passport = { user: user.id }; // Explicitly store Passport session
+        console.log("✅ User added to session:", req.session);
         done(null, user);
       } catch (err) {
         done(err, null);

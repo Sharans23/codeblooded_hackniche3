@@ -77,10 +77,27 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-
 app.use((req, res, next) => {
+  console.log("🔍 SESSION DEBUG:");
   console.log("Session:", req.session);
+  console.log("Session Passport:", req.session?.passport);
   console.log("User:", req.user);
+  next();
+});
+
+app.use(async (req, res, next) => {
+  if (req.session?.passport?.user && !req.user) {
+    console.log("🔄 Manually restoring user from session...");
+    try {
+      const user = await prisma.user.findUnique({ where: { id: req.session.passport.user } });
+      if (user) {
+        console.log("✅ User restored manually:", user);
+        req.user = user;
+      }
+    } catch (error) {
+      console.error("❌ Error manually restoring user:", error);
+    }
+  }
   next();
 });
 
