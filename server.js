@@ -17,21 +17,35 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: ["http://localhost:5173"],
   credentials: true
 }));
 
+// app.use(
+//   session({
+//     secret: process.env.SESSION_SECRET,
+//     resave: false,
+//     saveUninitialized: true,
+//     cookie:{
+//       maxAge: 24 * 60 * 60 * 1000,
+//       httpOnly: true
+//     }
+//   })
+// );
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
-    cookie:{
-      maxAge: 24 * 60 * 60 * 1000,
-      httpOnly: true
+    cookie: {
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+      httpOnly: true, // Protects from XSS
+      secure: true, // Required for HTTPS
+      sameSite: "none", // Allows cross-origin cookies
     }
   })
 );
+
 
 app.use(passport.initialize());
 app.use(passport.session());
