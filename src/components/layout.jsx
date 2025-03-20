@@ -8,7 +8,7 @@ export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
-    <div className="flex h-screen overflow-y-hidden" style={{height: '245vh'}}>
+    <div className="flex h-screen overflow-y-hidden" style={{height: '400vh'}}>
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
 
       <div className="flex flex-1 flex-col overflow-y-hidden">
