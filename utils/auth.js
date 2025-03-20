@@ -10,7 +10,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "http://localhost:5000/api/users/auth/google/callback",
+      callbackURL: "https://ims-hackniche3.onrender.com/api/users/auth/google/callback",
       passReqToCallback: true,  // Allows passing request object
     },
     async (req, accessToken, refreshToken, profile, done) => {
