@@ -21,10 +21,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 
-const SERVICE_ACCOUNT_CREDENTIALS = JSON.parse(
-    fs.readFileSync(path.resolve(__dirname, "./credentials.json"), "utf-8")
-);
-
+// const SERVICE_ACCOUNT_CREDENTIALS = JSON.parse(
+//     fs.readFileSync(path.resolve(__dirname, "./credentials.json"), "utf-8")
+// );
+const SERVICE_ACCOUNT_CREDENTIALS = JSON.parse(process.env.GOOGLE_CREDENTIALS);
 const SHEET_ID = "12Mb-rsBbHC1kzlHraIRUmS_73EfbtXccEQy4_3YhdMA"; // Replace with your Google Sheet ID
 
 const auth = new JWT({
