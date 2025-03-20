@@ -108,7 +108,7 @@ export default function CreateOrder() {
         // Get token from localStorage
         const token = localStorage.getItem('authToken');
         
-        const response = await fetch(`http://localhost:5000/api/warehouseProducts/67cc52504bf2e035730c0d48`, {
+        const response = await fetch(`https://ims-hackniche3.onrender.com/api/warehouseProducts/67cc52504bf2e035730c0d48`, {
 
         });
         
@@ -284,7 +284,7 @@ export default function CreateOrder() {
       
       console.log("Submitting order:", orderData);
       
-      const response = await fetch('http://localhost:5000/api/orders/create', {
+      const response = await fetch('https://ims-hackniche3.onrender.com/api/orders/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

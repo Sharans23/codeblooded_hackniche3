@@ -201,11 +201,7 @@ export default function Login() {
             </div>
           )}
         </CardContent>
-        <CardFooter>
-          <p className="text-xs text-center w-full text-muted-foreground">
-            For demo purposes, any username and password will work
-          </p>
-        </CardFooter>
+      
       </Card>
     </div>
   );

@@ -35,7 +35,7 @@ export default function Sidebar({ open, setOpen }) {
   }, [darkMode]);
 
   const adminNavigation = [
-    { name: "Dashboard", href: "/", icon: Home },
+    { name: "Dashboard", href: "/warehouse-dashboard", icon: Home },
     { name: "Stock", href: "/stock", icon: Package },
     { name: "Create Product", href: "/createproduct", icon: Settings },
     { name: "Scan QR", href: "/scanqr", icon: FileText },
@@ -43,9 +43,8 @@ export default function Sidebar({ open, setOpen }) {
   ];
 
   const clientNavigation = [
-    { name: "Dashboard", href: "/", icon: Home },
-    { name: "Orders", href: "/orders", icon: Box },
-    { name: "Create Order", href: "/createorder", icon: Truck },
+    { name: "Dashboard", href: "/client-dashboard", icon: Home },
+    { name: "Orders", href: "/createorder", icon: Box },
     { name: "Analysis", href: "/analysis", icon: BarChart2 },
     { name: "Map", href: "/map", icon: Truck },
  

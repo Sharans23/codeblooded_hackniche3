@@ -39,8 +39,10 @@ import {
 } from "recharts";
 import { useAuth } from "../contexts/auth-context";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
+  const navigate=useNavigate();
   const { user } = useAuth();
   const warehouseLocation = user?.location || "north";
   const [data, setData] = useState(null);
@@ -88,78 +90,56 @@ export default function Dashboard() {
         }
     }
     return null;
-}
-useEffect(() => {
-  const fetchUser = async () => {
-    try {
-      const res = await fetch("http://localhost:5000/api/users/profile", {
-        method: "GET",
-        credentials: "include", // Required for cookies/session to be sent
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      const data = await res.json();
-      console.log(data);
-    } catch (error) {
-      console.error("Failed to fetch user", error);
-    }
-  };
-  fetchUser();
-}, []);
- // Function to fetch shipping history from local storage
- useEffect(() => {
-  try {
-    // Get shipping history from local storage
-    const shippingHistoryString = localStorage.getItem('shippingHistory');
-    
-    if (shippingHistoryString) {
-      const shippingHistory = JSON.parse(shippingHistoryString);
-      
-      // Convert shipping history items to incoming shipment format
-      const historyShipments = shippingHistory.map((item) => {
-        return {
-          id: item.id,
-          supplier: `${item.productName} (${item.productCode})`,
-          items: item.quantity,
-          eta: new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          status: "on-time", // Default status
-          price: item.price,
-          totalValue: item.totalValue
-        };
-      });
-      
-      // Add the new shipments to the existing ones
-      setIncomingShipments(prevShipments => [...prevShipments, ...historyShipments]);
-    }
-  } catch (error) {
-    console.error("Error fetching shipping history from local storage:", error);
   }
-}, []);
-// useEffect(() => {
-//   fetch("https://b54pb2nm-5000.inc1.devtunnels.ms/api/users/profile",
-//     {
-//       credentials:"include"
-//     }
-//   )
-//     .then((response) => {
-//       if (!response.ok) {
-//         throw new Error("Network response was not ok");
-//       }
-//       return response.json();
-//     })
-//     .then((data) => {
-//       setData(data);
-//       setLoading(false);
-//     })
-//     .catch((error) => {
-//       setError(error.message);
-//       setLoading(false);
-//     });
-// }, []); 
-
-
   
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/users/profile", {
+          method: "GET",
+          credentials: "include", // Required for cookies/session to be sent
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        const data = await res.json();
+        console.log(data);
+      } catch (error) {
+        console.error("Failed to fetch user", error);
+      }
+    };
+    fetchUser();
+  }, []);
+  
+  // Function to fetch shipping history from local storage
+  useEffect(() => {
+    try {
+      // Get shipping history from local storage
+      const shippingHistoryString = localStorage.getItem('shippingHistory');
+      
+      if (shippingHistoryString) {
+        const shippingHistory = JSON.parse(shippingHistoryString);
+        
+        // Convert shipping history items to incoming shipment format
+        const historyShipments = shippingHistory.map((item) => {
+          return {
+            id: item.id,
+            supplier: `${item.productName} (${item.productCode})`,
+            items: item.quantity,
+            eta: new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            status: "on-time", // Default status
+            price: item.price,
+            totalValue: item.totalValue
+          };
+        });
+        
+        // Add the new shipments to the existing ones
+        setIncomingShipments(prevShipments => [...prevShipments, ...historyShipments]);
+      }
+    } catch (error) {
+      console.error("Error fetching shipping history from local storage:", error);
+    }
+  }, []);
 
   const [lowStockAlerts, setLowStockAlerts] = useState([
     {
@@ -275,8 +255,9 @@ useEffect(() => {
         </TabsList>
 
         <TabsContent value="overview" className="overflow-hidden">
-          <div className="grid gap-4 md:grid-cols-2  lg:grid-cols-7">
-            <Card className="col-span-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+            {/* Expanded Live Stock Tracking card (full width) */}
+            <Card className="col-span-7">
               <CardHeader>
                 <CardTitle>Live Stock Tracking</CardTitle>
                 <CardDescription>
@@ -284,7 +265,7 @@ useEffect(() => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="pl-2">
-                <ResponsiveContainer width="100%" height={350}>
+                <ResponsiveContainer width="100%" height={400}>
                   <AreaChart data={stockData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="date" />
@@ -328,107 +309,61 @@ useEffect(() => {
               </CardContent>
             </Card>
             
-      <Card className="col-span-3">
-        <CardHeader>
-          <CardTitle>Incoming Shipments</CardTitle>
-          <CardDescription>Expected deliveries for today</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {incomingShipments.map((shipment) => (
-              <div key={shipment.id} className="flex items-center">
-                <div
-                  className={`mr-4 flex h-8 w-8 items-center justify-center rounded-full ${
-                    shipment.status === "on-time"
-                      ? "bg-green-100 dark:bg-green-900"
-                      : shipment.status === "delayed"
-                      ? "bg-amber-100 dark:bg-amber-900"
-                      : "bg-red-100 dark:bg-red-900"
-                  }`}
-                >
-                  {shipment.status === "on-time" && (
-                    <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
-                  )}
-                  {shipment.status === "delayed" && (
-                    <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                  )}
-                  {shipment.status === "critical" && (
-                    <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
-                  )}
-                </div>
-                <div className="flex-1 space-y-1">
-                  <p className="text-sm font-medium leading-none">
-                    {shipment.supplier}
-                    <Badge variant="outline" className="ml-2">
-                      {shipment.items} items
-                    </Badge>
-                    {shipment.totalValue && (
-                      <Badge variant="secondary" className="ml-2">
-                        ${shipment.totalValue}
-                      </Badge>
-                    )}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    ETA: {shipment.eta}
-                  </p>
-                </div>
-                <Button variant="outline" size="sm">
-                  Details
-                </Button>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-            <Card className="col-span-3">
+            {/* Incoming Shipments (replacing Transfer Requests) */}
+            <Card className="col-span-4">
               <CardHeader>
-                <CardTitle>Transfer Requests</CardTitle>
-                <CardDescription>
-                  Pending stock transfers between warehouses
-                </CardDescription>
+                <CardTitle>Incoming Shipments</CardTitle>
+                <CardDescription>Expected deliveries for today</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {transferRequests.map((request) => (
-                    <div key={request.id} className="flex items-center">
-                      <div className="mr-4 flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
-                        <Truck className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  {incomingShipments.map((shipment) => (
+                    <div key={shipment.id} className="flex items-center">
+                      <div
+                        className={`mr-4 flex h-8 w-8 items-center justify-center rounded-full ${
+                          shipment.status === "on-time"
+                            ? "bg-green-100 dark:bg-green-900"
+                            : shipment.status === "delayed"
+                            ? "bg-amber-100 dark:bg-amber-900"
+                            : "bg-red-100 dark:bg-red-900"
+                        }`}
+                      >
+                        {shipment.status === "on-time" && (
+                          <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
+                        )}
+                        {shipment.status === "delayed" && (
+                          <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                        )}
+                        {shipment.status === "critical" && (
+                          <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
+                        )}
                       </div>
                       <div className="flex-1 space-y-1">
                         <p className="text-sm font-medium leading-none">
-                          {request.from} → {request.to}
+                          {shipment.supplier}
                           <Badge variant="outline" className="ml-2">
-                            {request.category}
+                            {shipment.items} items
                           </Badge>
+                          {shipment.totalValue && (
+                            <Badge variant="secondary" className="ml-2">
+                              ${shipment.totalValue}
+                            </Badge>
+                          )}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          {request.quantity} units • Requested: {request.date}
+                          ETA: {shipment.eta}
                         </p>
                       </div>
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-8 w-8 p-0"
-                        >
-                          <CheckCircle2 className="h-4 w-4" />
-                          <span className="sr-only">Approve</span>
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-8 w-8 p-0"
-                        >
-                          <AlertCircle className="h-4 w-4" />
-                          <span className="sr-only">Reject</span>
-                        </Button>
-                      </div>
+                      <Button variant="outline" size="sm">
+                        Details
+                      </Button>
                     </div>
                   ))}
                 </div>
               </CardContent>
             </Card>
-            <Card className="col-span-4">
+            
+            <Card className="col-span-3">
               <CardHeader>
                 <CardTitle>Barcode Scanner</CardTitle>
                 <CardDescription>
@@ -447,7 +382,7 @@ useEffect(() => {
                       your device camera
                     </p>
                   </div>
-                  <Button>Open Scanner</Button>
+                  <Button onClick={()=>{navigate('/scanqr')}}>Open Scanner</Button>
                 </div>
                 <div className="mt-4">
                   <h3 className="mb-2 text-sm font-medium">Recent Scans</h3>
@@ -682,69 +617,11 @@ const stockData = [
   { date: "Sun", electronics: 460, furniture: 360, clothing: 270, other: 160 },
 ];
 
-const incomingShipments = [
-  {
-    id: 1,
-    supplier: "Tech Supplies Inc.",
-    items: 120,
-    eta: "10:30 AM",
-    status: "on-time",
-  },
-  {
-    id: 2,
-    supplier: "Furniture Depot",
-    items: 45,
-    eta: "12:15 PM",
-    status: "delayed",
-  },
-  {
-    id: 3,
-    supplier: "Fashion Wholesale",
-    items: 200,
-    eta: "2:00 PM",
-    status: "on-time",
-  },
-  {
-    id: 4,
-    supplier: "Electronics Hub",
-    items: 75,
-    eta: "4:30 PM",
-    status: "critical",
-  },
-];
-
 const batchProducts = [
   { id: 1, name: "Smartphone X", method: "FIFO", batches: 3 },
   { id: 2, name: "Laptop Pro", method: "FIFO", batches: 2 },
   { id: 3, name: "Office Chair", method: "LIFO", batches: 2 },
   { id: 4, name: "Wireless Earbuds", method: "FIFO", batches: 4 },
-];
-
-const transferRequests = [
-  {
-    id: 1,
-    from: "South",
-    to: "North",
-    category: "Electronics",
-    quantity: 50,
-    date: "Today",
-  },
-  {
-    id: 2,
-    from: "East",
-    to: "North",
-    category: "Furniture",
-    quantity: 20,
-    date: "Yesterday",
-  },
-  {
-    id: 3,
-    from: "West",
-    to: "North",
-    category: "Clothing",
-    quantity: 100,
-    date: "Yesterday",
-  },
 ];
 
 const recentScans = [

@@ -43,7 +43,7 @@ const ProductForm = () => {
       };
     
       try {
-        const response = await fetch("http://localhost:5000/api/warehouseProducts/create", {
+        const response = await fetch("https://ims-hackniche3.onrender.com/api/warehouseProducts/create", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
