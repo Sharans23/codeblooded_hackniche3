@@ -375,7 +375,7 @@ export const createOrder = async (req, res) => {
       // If warehouse admin doesn't have a Google Sheet, create a new one
       if (!googleSheetId) {
         googleSheetId = await createGoogleSheet(warehouse.admin.Name);
-        await prisma.warehouseAdmin.update({
+        await prisma.user.update({
           where: { id: warehouse.admin.id },
           data: { googleSheetId },
         });
@@ -421,15 +421,40 @@ async function createGoogleSheet(ownerName) {
 // Function to write orders to Google Sheets
 async function addOrdersToGoogleSheet(orderItems, googleSheetId) {
   const doc = new GoogleSpreadsheet(googleSheetId, auth);
-  await doc.loadInfo();
-  
+  await doc.loadInfo(); 
+
   let sheet;
   if (doc.sheetCount === 0) {
-    sheet = await doc.addSheet({ title: "Orders", headerValues: [
-      "ClientID", "ProductID", "WarehouseID", "PaymentMode", "PaymentStatus", "Quantity", "InStock", "DeliveryStatus", "ExpectedDelivery"
-    ]});
+    console.log("🔄 Creating new sheet with headers...");
+    sheet = await doc.addSheet({ title: "Orders" });
+
+    // 🚀 Set header row before anything else
+    await sheet.setHeaderRow([
+      "ClientID", "ProductID", "WarehouseID", "PaymentMode", 
+      "PaymentStatus", "Quantity", "InStock", "DeliveryStatus", "ExpectedDelivery"
+    ]);
   } else {
     sheet = doc.sheetsByIndex[0];
+
+    // 🚀 Forcefully reload headers
+    try {
+      await sheet.loadHeaderRow();
+    } catch (error) {
+      console.log("⚠️ No headers found! Setting them now...");
+      await sheet.setHeaderRow([
+        "ClientID", "ProductID", "WarehouseID", "PaymentMode", 
+        "PaymentStatus", "Quantity", "InStock", "DeliveryStatus", "ExpectedDelivery"
+      ]);
+
+      // 🔥 Reload again to confirm headers are set
+      await sheet.loadHeaderRow();
+    }
+  }
+
+  // 🚀 Ensure headers are present before adding rows
+  if (!sheet.headerValues || sheet.headerValues.length === 0) {
+    console.error("❌ Headers are STILL missing! Cannot proceed.");
+    return;
   }
 
   const rows = orderItems.map((order) => ({
@@ -444,8 +469,10 @@ async function addOrdersToGoogleSheet(orderItems, googleSheetId) {
     ExpectedDelivery: order.expectedDelivery.toISOString(),
   }));
 
+  console.log("✅ Adding orders to Google Sheets...");
   await sheet.addRows(rows);
 }
+
 
 
 export const getClientOrders = async (req, res) => {

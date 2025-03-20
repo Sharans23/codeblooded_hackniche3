@@ -30,9 +30,15 @@ passport.use(
           });
         }
         
-        req.session.passport = { user: user.id }; // Explicitly store Passport session
-        console.log("✅ User added to session:", req.session);
-        done(null, user);
+        req.session.passport = { user: user.id };
+        req.session.save((err) => {  // 🔥 Explicitly saving session before redirecting
+          if (err) {
+            console.error("❌ Error saving session:", err);
+            return done(err, null);
+          }
+          console.log("✅ User added to session:", req.session);
+          done(null, user);
+        });
       } catch (err) {
         done(err, null);
       }
