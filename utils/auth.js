@@ -41,16 +41,21 @@ passport.use(
 
 // Serialize user to store user ID in session
 passport.serializeUser((user, done) => {
+  console.log("Serializing user:", user);
   done(null, user.id);
 });
 
 // Deserialize user by fetching from the database
 passport.deserializeUser(async (id, done) => {
+  console.log("Deserializing user with ID:", id);
   try {
-    const user = await prisma.user.findUnique({ where: { id } });
+    const user = await prisma.user.findUnique({ where: { id } }); // Fetch user from DB
+    if (!user) return done(null, false);
+    console.log("User found:", user);
     done(null, user);
-  } catch (err) {
-    done(err, null);
+  } catch (error) {
+    console.error("Error deserializing user:", error);
+    done(error);
   }
 });
 
