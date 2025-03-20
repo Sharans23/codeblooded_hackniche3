@@ -16,9 +16,23 @@ dotenv.config();
 
 const app = express();
 app.use(express.json());
+// app.use(cors({
+//   origin: "http://localhost:5173",
+//   credentials: true
+// }));
+const allowedOrigins = ["http://localhost:5173"];
+
 app.use(cors({
-  origin: ["http://localhost:5173"],
-  credentials: true
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 }));
 
 // app.use(
@@ -32,16 +46,29 @@ app.use(cors({
 //     }
 //   })
 // );
+// app.use(
+//   session({
+//     secret: process.env.SESSION_SECRET,
+//     resave: false,
+//     saveUninitialized: true,
+//     cookie: {
+//       maxAge: 24 * 60 * 60 * 1000, // 1 day
+//       httpOnly: true, // Protects from XSS
+//       secure: true, // Required for HTTPS
+//       // sameSite: "none", // Allows cross-origin cookies
+//     }
+//   })
+// );
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false, // Set to false to avoid storing empty sessions
     cookie: {
       maxAge: 24 * 60 * 60 * 1000, // 1 day
-      httpOnly: true, // Protects from XSS
-      secure: true, // Required for HTTPS
-      // sameSite: "none", // Allows cross-origin cookies
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // Enable only in production
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     }
   })
 );
@@ -68,5 +95,11 @@ app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Credentials", "true");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  next();
+});
+
+app.use((req, res, next) => {
+  console.log("Session:", req.session);
+  console.log("User:", req.user);
   next();
 });
