@@ -24,7 +24,7 @@ export const googleAuthCallback = (req, res, next) => {
       // localStorage.setItem("warehouseId",user.warehouse.warehouseId)
       // res.
 
-      res.redirect(`http://localhost:5173/dashboard/${user.id}`);
+      res.redirect(`https://codeblooded-hackniche3.vercel.app/dashboard/${user.id}`);
     });
   })(req, res, next);
 };
