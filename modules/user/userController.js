@@ -25,7 +25,7 @@ export const googleAuthCallback = (req, res, next) => {
       // res.
 
       // res.redirect(`https://codeblooded-hackniche3.vercel.app/dashboard/${user.id}`);
-      res.redirect(`https://codeblooded-hackniche3.vercel.app/dashboard`);
+      res.redirect(`https://codeblooded-hackniche3.vercel.app/warehouse-dashboard`);
     });
   })(req, res, next);
 };
