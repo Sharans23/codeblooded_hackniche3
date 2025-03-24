@@ -119,6 +119,7 @@ export default function Login() {
             >
               Shop Owner
             </Button>
+            
           </div>
           <CardDescription className="text-center">
             {role ? (role === "admin" ? "Admin Login Panel" : `Shop Owner ${isSignup ? "Signup" : "Login"} Panel`) : "Please select a role"}
