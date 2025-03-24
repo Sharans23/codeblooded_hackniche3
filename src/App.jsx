@@ -35,7 +35,8 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
-        <Route index element={<Dashboard />} />
+        <Route index element={<Login />} />
+        <Route path="login" element={<Login />} />
         <Route path="warehouse-dashboard" element={<Dashboard />} />
         <Route path="stock" element={<Stock />} />
         <Route path="createproduct" element={<ProductForm />} />
@@ -44,7 +45,6 @@ function App() {
         <Route path="createorder" element={<CreateOrder />} />
         <Route path="client-dashboard" element={<ClientDashboard />} />
         {/* <Route path="machineLearning" element={<SalesPrediction />} /> */}
-        <Route path="login" element={<Login />} />
         {/* <Route path="loginpage" element={<Loginpage />} /> */}
         <Route path="analysis" element={<Analysis />} />
         <Route path="map" element={<Map />} />

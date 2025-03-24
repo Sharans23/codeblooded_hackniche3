@@ -81,7 +81,7 @@ export default function Login() {
       // Keep the original admin login flow
       login({ name: username, location: "north" });
       localStorage.setItem("userRole", role);
-      navigate("/client-dashboard");
+      navigate("/warehouse-dashboard");
     }
   };
     
@@ -119,7 +119,7 @@ export default function Login() {
             >
               Shop Owner
             </Button>
-            
+
           </div>
           <CardDescription className="text-center">
             {role ? (role === "admin" ? "Admin Login Panel" : `Shop Owner ${isSignup ? "Signup" : "Login"} Panel`) : "Please select a role"}
