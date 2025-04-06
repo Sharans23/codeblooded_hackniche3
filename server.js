@@ -21,7 +21,7 @@ app.set("trust proxy", 1);
 //   origin: "http://localhost:5173",
 //   credentials: true
 // }));
-const allowedOrigins = ["http://localhost:5173","https://codeblooded-hackniche3.vercel.app"];
+const allowedOrigins = ["http://localhost:5173","https://codeblooded-hackniche3.vercel.app","http://localhost:5174","http://localhost:5175","http://localhost:5176"];
 
 app.use(cors({
   origin: function (origin, callback) {
